@@ -1,3 +1,7 @@
+import 'dart:core';
+import 'dart:core';
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 
 void main() {
@@ -64,16 +68,37 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  List<Widget> noTrees = [
+      const Text(
+      'No trees found. Try creating one!',
+        style: TextStyle(
+        fontSize: 24,
+        textBaseline: TextBaseline.alphabetic,
+        ),
+      ),
+      const SizedBox(
+        height: 100,
+      ),
+  ];
 
-  void _incrementCounter() {
+  List<Widget> myTrees = [];
+
+  List<Widget> chooseList() {
+    if (myTrees.isEmpty) return noTrees;
+    return myTrees;
+  }
+
+  void _addTree() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      myTrees.add(
+        const Text(
+          'One tree found. Noice!',
+          style: TextStyle(
+            fontSize: 24,
+            textBaseline: TextBaseline.alphabetic,
+          ),
+        ),
+      );
     });
   }
 
@@ -109,23 +134,22 @@ class _MyHomePageState extends State<MyHomePage> {
           // center the children vertically; the main axis here is the vertical
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
+
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+          children: chooseList(),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+
+      floatingActionButton: Container(
+        margin: const EdgeInsets.only(bottom: 100.0),
+        child: FloatingActionButton(
+          tooltip: 'Create a new tree',
+          onPressed: _addTree,
+          elevation: 1,
+          child: Icon(Icons.add),
+        ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
