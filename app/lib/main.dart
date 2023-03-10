@@ -4,6 +4,22 @@ void main() {
   runApp(const MyApp());
 }
 
+class Palette {
+  static MaterialColor customGreen = MaterialColor(const Color.fromRGBO(22, 166, 55, 1).value, const <int, Color>{
+      50: Color.fromRGBO(22, 166, 55, 0.1),
+      100: Color.fromRGBO(22, 166, 55, 0.2),
+      200: Color.fromRGBO(22, 166, 55, 0.3),
+      300: Color.fromRGBO(22, 166, 55, 0.4),
+      400: Color.fromRGBO(22, 166, 55, 0.5),
+      500: Color.fromRGBO(22, 166, 55, 0.6),
+      600: Color.fromRGBO(22, 166, 55, 0.7),
+      700: Color.fromRGBO(22, 166, 55, 0.8),
+      800: Color.fromRGBO(22, 166, 55, 0.9),
+      900: Color.fromRGBO(22, 166, 55, 1)
+    },
+  );
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -22,9 +38,9 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Palette.customGreen,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'GenealogyGuru'),
     );
   }
 }
