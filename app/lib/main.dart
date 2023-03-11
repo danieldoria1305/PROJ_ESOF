@@ -24,6 +24,26 @@ class Palette {
   );
 }
 
+class MyTreeWidget extends StatelessWidget {
+  final String treeName;
+
+  const MyTreeWidget({Key? key, required this.treeName}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(treeName),
+          const Icon(Icons.star),
+        ],
+      ),
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -72,15 +92,16 @@ class _MyHomePageState extends State<MyHomePage> {
       const Text(
       'No trees found. Try creating one!',
         style: TextStyle(
-        fontSize: 24,
-        textBaseline: TextBaseline.alphabetic,
+          fontFamily: "Times New Roman",
+          fontSize: 24,
+          textBaseline: TextBaseline.alphabetic,
         ),
       ),
       const SizedBox(
         height: 100,
       ),
   ];
-
+  int _counter = 0;
   List<Widget> myTrees = [];
 
   List<Widget> chooseList() {
@@ -89,17 +110,50 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _addTree() {
-    setState(() {
-      myTrees.add(
-        const Text(
-          'One tree found. Noice!',
-          style: TextStyle(
-            fontSize: 24,
-            textBaseline: TextBaseline.alphabetic,
+    if (_counter < 5) {
+      setState(() {
+        Widget treeWidget = Container(
+          width: 300,
+          height: 67,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.black),
           ),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+                child: Text(
+                'Family Tree ${myTrees.length + 1}',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontFamily: "Times New Roman",
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ),
+            Spacer(),
+            const Icon(Icons.star_border),
+          ],
         ),
-      );
-    });
+          /*child: Center(
+            child: Text(
+              'Family Tree ${myTrees.length + 1}',
+              style: TextStyle(
+                fontSize: 20,
+                fontFamily: "Times New Roman",
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ),*/
+        );
+
+        myTrees.add(treeWidget);
+
+        _counter++;
+      });
+    }
   }
 
   @override
@@ -114,9 +168,25 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text(widget.title, style:
+        TextStyle(
+            fontFamily: "Times New Roman",
+            fontWeight: FontWeight.bold
+          ),
+        ),
       ),
-      body: Center(
+      body: ListView(
+        // Set the padding to move the list of widgets up
+        padding: EdgeInsets.only(top: 75),
+        children: [
+          Center(
+            child: Column(
+              children: chooseList(),
+            ),
+          ),
+        ],
+      ),
+      /* body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: Column(
@@ -138,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: chooseList(),
         ),
-      ),
+      ), */
 
       floatingActionButton: Container(
         margin: const EdgeInsets.only(bottom: 100.0),
