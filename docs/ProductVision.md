@@ -1,4 +1,4 @@
-#### Product Vision
+### Product Vision
 
 The GenealogyGury will revolutionize the way people discover, preserve, and share their family history. Our product vision is to provide a comprehensive, user-friendly platform that enables individuals to build and maintain their family tree, access historical records.
 
