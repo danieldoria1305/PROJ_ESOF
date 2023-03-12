@@ -1,4 +1,4 @@
-#### Elevator Pitch
+### Elevator Pitch
 
 We are 2nd year students of Informatics and Computers Engineering and we believe that GenealogyGuru is the ultimate solution for anyone looking to uncover their family history. With easy-to-use tools, our app allows users to build and maintain their family tree and connect with relatives around the world. Our app integrates with a genealogy database and archives to provide users with the most comprehensive view of their family's past. 
 
