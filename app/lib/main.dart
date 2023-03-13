@@ -138,15 +138,81 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
         );
-
         myTrees.add(treeWidget);
 
         _counter++;
       });
     }
+    else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('You cannot add more than 5 trees.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
+  Widget build(BuildContext context) {
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
+    return Scaffold(
+      appBar: AppBar(
+        // Here we take the value from the MyHomePage object that was created...
+        title: Text(widget.title),
+      ),
+
+      body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: chooseList(),
+          ),
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: SizedBox(
+        width: 56,
+        height: 56,
+        child: Stack(
+          children: [
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: FloatingActionButton(
+                onPressed: _addTree,
+                tooltip: 'Add Tree',
+                child: const Icon(Icons.add),
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+/* @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
@@ -177,7 +243,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       floatingActionButton: Container(
-        margin: const EdgeInsets.only(bottom: 100.0),
+        margin: const EdgeInsets.only(bottom: 75.0),
         child: FloatingActionButton(
           tooltip: 'Create a new tree',
           onPressed: _addTree,
@@ -187,5 +253,5 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
-  }
+  } */
 }
