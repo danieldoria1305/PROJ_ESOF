@@ -24,10 +24,10 @@ class Palette {
   );
 }
 
-class MyTreeWidget extends StatelessWidget {
+class TreeWidget extends StatelessWidget {
   final String treeName;
 
-  const MyTreeWidget({Key? key, required this.treeName}) : super(key: key);
+  const TreeWidget({Key? key, required this.treeName}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -102,13 +102,31 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
   ];
   int _counter = 0;
+
   List<Widget> myTrees = [];
+
+  late TextEditingController controller;
+  String name='';
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = TextEditingController();
+  }
+
+  @override
+  void dispose(){
+    controller.dispose();
+    super.dispose();
+  }
 
   List<Widget> chooseList() {
     if (myTrees.isEmpty) return noTrees;
     return myTrees;
   }
 
+  /*
   void _addTree() {
     if ( _counter < 5 ) {
       setState(() {
@@ -151,7 +169,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     }
-  }
+  } */
 
   @override
   Widget build(BuildContext context) {
@@ -200,7 +218,15 @@ class _MyHomePageState extends State<MyHomePage> {
               bottom: 0,
               right: 0,
               child: FloatingActionButton(
-                onPressed: _addTree,
+                onPressed: () async {
+                  final name = await openDialog();
+                  if (name == null || name.isEmpty) return;
+
+                  setState(() {
+                    myTrees.add(TreeWidget(treeName: name));
+
+                  });
+                },
                 tooltip: 'Add Tree',
                 child: const Icon(Icons.add),
               ),
@@ -211,6 +237,32 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
+
+  Future<String?> openDialog() => showDialog<String>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Create new Tree'),
+      content: TextField(
+        autofocus: true,
+        decoration: InputDecoration(hintText: 'Tree Name'),
+        controller: controller,
+      ),
+      actions: [
+        TextButton(
+          child: Text('Create'),
+          onPressed: submit,
+
+        )
+      ],
+    ),
+  );
+
+  void submit() {
+    Navigator.of(context).pop(controller.text);
+
+    controller.clear();
+  }
+
 
 /* @override
   Widget build(BuildContext context) {
@@ -254,4 +306,7 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   } */
+
+
 }
+
