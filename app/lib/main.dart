@@ -1,5 +1,4 @@
 import 'dart:core';
-import 'dart:core';
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
@@ -31,7 +30,8 @@ class TreeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    /*return Container(
+      padding: EdgeInsets.fromLTRB(65, 0, 65, 0),
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -39,6 +39,15 @@ class TreeWidget extends StatelessWidget {
           Text(treeName),
           const Icon(Icons.star),
         ],
+      ),
+    );*/
+    return Card(
+        margin: EdgeInsets.fromLTRB(0, 1, 0, 1),
+        child: ListTile(
+          trailing: Icon(Icons.star_border_outlined,
+              color: Colors.amber[400]
+          ),
+          title: Text(treeName),
       ),
     );
   }
@@ -52,6 +61,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -88,25 +98,22 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<Widget> noTrees = [
-      const Text(
-      'No trees found. Try creating one!',
-        style: TextStyle(
-          fontFamily: "Times New Roman",
-          fontSize: 24,
-          textBaseline: TextBaseline.alphabetic,
+  Widget noTrees =
+      Center(
+        child: const Text(
+        'No trees found. Try creating one!',
+          style: TextStyle(
+            fontFamily: "Times New Roman",
+            fontSize: 24,
+            textBaseline: TextBaseline.alphabetic,
+          ),
         ),
-      ),
-      const SizedBox(
-        height: 100,
-      ),
-  ];
-  int _counter = 0;
+      );
 
-  List<Widget> myTrees = [];
+  List<Widget> trees = [];
 
   late TextEditingController controller;
-  String name='';
+  String name = '';
 
   @override
   void initState() {
@@ -121,9 +128,17 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  List<Widget> chooseList() {
-    if (myTrees.isEmpty) return noTrees;
-    return myTrees;
+  Widget chooseList() {
+    if (trees.isEmpty) return Container(
+        child: noTrees,
+    );
+    return Container(
+      padding: EdgeInsets.fromLTRB(50, 0, 50, 0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: trees,
+      ),
+    );
   }
 
   /*
@@ -185,6 +200,8 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
 
+      body: chooseList(),
+      /*
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -192,7 +209,7 @@ class _MyHomePageState extends State<MyHomePage> {
             children: chooseList(),
           ),
         ),
-      ),
+      ),*/
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         child: Row(
@@ -223,7 +240,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   if (name == null || name.isEmpty) return;
 
                   setState(() {
-                    myTrees.add(TreeWidget(treeName: name));
+                    trees.add(TreeWidget(treeName: name));
 
                   });
                 },
@@ -244,7 +261,7 @@ class _MyHomePageState extends State<MyHomePage> {
       title: Text('Create new Tree'),
       content: TextField(
         autofocus: true,
-        decoration: InputDecoration(hintText: 'Tree Name'),
+        decoration: InputDecoration(hintText: 'Insert tree name'),
         controller: controller,
       ),
       actions: [
