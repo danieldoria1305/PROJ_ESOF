@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "468941713540",
+    "project_id": "genealogyguru-es-2223",
+    "storage_bucket": "genealogyguru-es-2223.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:468941713540:android:22db31ec67681d5d0a12d1",
+        "android_client_info": {
+          "package_name": "com.app.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "468941713540-n01th6ura0p1bh2g3l777r4cg22msma5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADLXLhbdXx8w5FEVy75OZ9z-YS4SNd8lw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "468941713540-n01th6ura0p1bh2g3l777r4cg22msma5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
