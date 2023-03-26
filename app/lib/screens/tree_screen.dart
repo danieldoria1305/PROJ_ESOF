@@ -20,23 +20,41 @@ class _TreeScreenState extends State<TreeScreen> {
     });
   }
 
-  List<Widget> chooseList() {
+  Widget chooseList() {
     if (familyMembers.isEmpty) {
-      return [
-        Text('No family members yet'),
-      ];
-    } else {
-      return familyMembers.map((member) {
-        return Card(
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(member.photo ?? ''),
+      return
+        Center(
+          child: Text('No family members yet!',
+            style: TextStyle(fontSize: 24)
             ),
-            title: Text(member.name),
-            subtitle: Text(DateFormat.yMMMd().format(member.dateOfBirth)),
-          ),
-        );
-      }).toList();
+          );
+    } else {
+
+      return Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: familyMembers.map((member) {
+            return Card(
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(member.photo ?? ''),
+                ),
+                title: Text(member.name,
+                    style: TextStyle(fontSize: 14, color: Colors.black)),
+                subtitle: Text(DateFormat.yMMMd().format(member.dateOfBirth)),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete),
+                  onPressed: () {
+                    setState(() {
+                      familyMembers.remove(member);
+                    });
+                  },
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      );
     }
   }
 
@@ -45,9 +63,7 @@ class _TreeScreenState extends State<TreeScreen> {
       appBar: AppBar(
         title: Text(widget.treeName),
       ),
-      body: ListView(
-        children: chooseList(),
-      ),
+      body: chooseList(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showDialog(
@@ -92,6 +108,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
 
   void _submitForm() {
     if (_formKey.currentState != null && _formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
       widget.onSubmit(FamilyMember(
         photo: _photo,
         name: _name,
@@ -108,98 +125,100 @@ class _AddMemberFormState extends State<AddMemberForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextFormField(
-            decoration: InputDecoration(labelText: 'Name'),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter a name';
-              }
-              return null;
-            },
-            onSaved: (value) => _name = value!,
-          ),
-          TextFormField(
-            decoration: InputDecoration(labelText: 'Date of Birth'),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter a date of birth';
-              }
-              return null;
-            },
-            onTap: () async {
-              final DateTime? date = await showDatePicker(
-                context: context,
-                initialDate: _dateOfBirth,
-                firstDate: DateTime(1900),
-                lastDate: DateTime.now(),
-              );
-              if (date != null) {
-                setState(() {
-                  _dateOfBirth = date;
-                });
-              }
-            },
-            readOnly: true,
-            controller: TextEditingController(
-                text: DateFormat.yMMMMd().format(_dateOfBirth)),
-          ),
-          /*TextFormField(
-            decoration: InputDecoration(labelText: 'Date of Death'),
-            onTap: () async {
-              final DateTime? date = await showDatePicker(
-                context: context,
-                initialDate: _dateOfDeath ?? DateTime.now(),
-                firstDate: DateTime(1900),
-                lastDate: DateTime.now(),
-              );
-              if (date != null) {
-                setState(() {
-                  _dateOfDeath = date;
-                });
-              }
-            },
-            readOnly: true,
-            controller: TextEditingController(
-                text: _dateOfDeath != null
-                    ? DateFormat.yMMMMd().format(_dateOfDeath!)
-                    : ""),
-          ),*/
-          DropdownButtonFormField<String>(
-            decoration: InputDecoration(labelText: 'Gender'),
-            items: ['Male', 'Female', 'Non-binary', 'Other']
-                .map((gender) => DropdownMenuItem<String>(
-                      value: gender,
-                      child: Text(gender),
-                    ))
-                .toList(),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please select a gender';
-              }
-              return null;
-            },
-            onChanged: (value) => setState(() => _gender = value!),
-            value: _gender?.isNotEmpty == true ? _gender : null,
-          ),
-          TextFormField(
-            decoration: InputDecoration(labelText: 'Occupation'),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter an occupation';
-              }
-              return null;
-            },
-            onSaved: (value) => _occupation = value!,
-          ),
-          SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _submitForm,
-            child: Text('Add Member'),
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              decoration: InputDecoration(labelText: 'Name'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a name';
+                }
+                return null;
+              },
+              onSaved: (value) => _name = value!,
+            ),
+            TextFormField(
+              decoration: InputDecoration(labelText: 'Date of Birth'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a date of birth';
+                }
+                return null;
+              },
+              onTap: () async {
+                final DateTime? date = await showDatePicker(
+                  context: context,
+                  initialDate: _dateOfBirth,
+                  firstDate: DateTime(1900),
+                  lastDate: DateTime.now(),
+                );
+                if (date != null) {
+                  setState(() {
+                    _dateOfBirth = date;
+                  });
+                }
+              },
+              readOnly: true,
+              controller: TextEditingController(
+                  text: DateFormat.yMMMMd().format(_dateOfBirth)),
+            ),
+            /*TextFormField(
+              decoration: InputDecoration(labelText: 'Date of Death'),
+              onTap: () async {
+                final DateTime? date = await showDatePicker(
+                  context: context,
+                  initialDate: _dateOfDeath ?? DateTime.now(),
+                  firstDate: DateTime(1900),
+                  lastDate: DateTime.now(),
+                );
+                if (date != null) {
+                  setState(() {
+                    _dateOfDeath = date;
+                  });
+                }
+              },
+              readOnly: true,
+              controller: TextEditingController(
+                  text: _dateOfDeath != null
+                      ? DateFormat.yMMMMd().format(_dateOfDeath!)
+                      : ""),
+            ),*/
+            DropdownButtonFormField<String>(
+              decoration: InputDecoration(labelText: 'Gender'),
+              items: ['Male', 'Female', 'Non-binary', 'Other']
+                  .map((gender) => DropdownMenuItem<String>(
+                        value: gender,
+                        child: Text(gender),
+                      ))
+                  .toList(),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please select a gender';
+                }
+                return null;
+              },
+              onChanged: (value) => setState(() => _gender = value!),
+              value: _gender?.isNotEmpty == true ? _gender : null,
+            ),
+            TextFormField(
+              decoration: InputDecoration(labelText: 'Occupation'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter an occupation';
+                }
+                return null;
+              },
+              onSaved: (value) => _occupation = value!,
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _submitForm,
+              child: Text('Add Member'),
+            ),
+          ],
+        ),
       ),
     );
   }

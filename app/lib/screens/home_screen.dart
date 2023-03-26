@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 
 class TreeWidget extends StatelessWidget {
   final String treeName;
+  final VoidCallback onDelete;
 
-  const TreeWidget({Key? key, required this.treeName}) : super(key: key);
+  const TreeWidget({Key? key, required this.treeName, required this.onDelete}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,10 @@ class TreeWidget extends StatelessWidget {
       child: Card(
         margin: EdgeInsets.fromLTRB(0, 1, 0, 1),
         child: ListTile(
-          trailing: Icon(Icons.star_border_outlined, color: Colors.amber[400]),
+          trailing: IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: onDelete,
+          ),
           title: Text(treeName),
         ),
       ),
@@ -70,19 +74,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Widget noTrees =
-  Center(
-    child: const Text(
-      'No trees found. Try creating one!',
-      style: TextStyle(
-        fontFamily: "Times New Roman",
-        fontSize: 24,
-        textBaseline: TextBaseline.alphabetic,
-      ),
-    ),
-  );
-
-  List<Widget> trees = [];
+  static List<Widget> trees = [];
 
   late TextEditingController controller;
   String name = '';
@@ -102,7 +94,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget chooseList() {
     if (trees.isEmpty) return Container(
-      child: noTrees,
+      child: Center(
+        child: const Text(
+          'No trees found. Try creating one!',
+          style: TextStyle(
+            fontFamily: "Times New Roman",
+            fontSize: 24,
+            textBaseline: TextBaseline.alphabetic,
+          ),
+        ),
+      ),
     );
     return Container(
       padding: EdgeInsets.fromLTRB(50, 0, 50, 0),
@@ -128,23 +129,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
 
       body: chooseList(),
-
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {},
-            ),
-          ],
-        ),
-      ),
       floatingActionButton: SizedBox(
         width: 56,
         height: 56,
@@ -159,8 +143,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (name == null || name.isEmpty) return;
 
                   setState(() {
-                    trees.add(TreeWidget(treeName: name));
-
+                    trees.add(TreeWidget(
+                        treeName: name,
+                    onDelete: () {
+                      setState(() {
+                        trees.removeWhere((widget) => widget is TreeWidget && widget.treeName == name);
+                      });
+                    }),
+                    );
                   });
                 },
                 tooltip: 'Add Tree',
