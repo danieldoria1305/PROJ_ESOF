@@ -15,7 +15,7 @@
 - #### GenealogyGuru Database Schema
     Connection between the Firebase database and our app, to store all of user's data about the trees and login.
   
-![Logical Architecture](../images/logical_architecture.png)
+![Logical Architecture](../images/logical_architecture.jpeg)
 </a>
 <a name="physical">
  
@@ -25,7 +25,7 @@
 
 Our app's physical architecture includes only two technologies: the Firebase database to store users' information and the app itself, created using Flutter, which the user interacts with.
 
-![Physical Architecture](../images/physical_architecture.png)
+![Physical Architecture](../images/physical_architecture.jpeg)
 </a>
 <a name="vertical">
   
