@@ -7,4 +7,4 @@
 - **Member**: Class representing a certain tree member.
 - **Statistic**: Associative class representing the trees' statistics.
 
-![Domain Model](../images/domain_model.jpeg)
+![Domain Model](../images/domain_model.png)
