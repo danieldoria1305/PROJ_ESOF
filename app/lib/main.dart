@@ -1,6 +1,7 @@
 import 'dart:core';
 import 'package:app/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:app/screens/login_page.dart';
 
 
 void main() {
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const HomeScreen(title: 'GenealogyGuru'),
+      home: LoginPage(),// const HomeScreen(title: 'GenealogyGuru'),
     );
   }
 }
