@@ -23,6 +23,7 @@ class _LoginPageState extends State<LoginPage> {
                   Icons.balance,
                   size: 100,
                 ),
+                SizedBox(height: 25),
                 Text(
                     "Hello Again!",
                   style: GoogleFonts.bebasNeue(
