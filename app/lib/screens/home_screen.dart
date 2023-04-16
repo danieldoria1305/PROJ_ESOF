@@ -1,4 +1,4 @@
-import 'package:app/screens/tree_screen.dart';
+import 'package:GenealogyGuru/screens/tree_screen.dart';
 import 'package:flutter/material.dart';
 
 class TreeWidget extends StatelessWidget {

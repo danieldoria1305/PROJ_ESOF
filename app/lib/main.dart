@@ -1,6 +1,6 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
-import 'package:app/screens/login_page.dart';
+import 'package:GenealogyGuru/screens/login_page.dart';
 import "package:firebase_core/firebase_core.dart";
 
 void main() async {
