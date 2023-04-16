@@ -1,4 +1,5 @@
-import 'package:app/screens/tree_screen.dart';
+import 'package:GenealogyGuru/screens/tree_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class TreeWidget extends StatelessWidget {
@@ -56,7 +57,9 @@ class TreeWidget extends StatelessWidget {
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.title});
+  HomeScreen({super.key, required this.title});
+
+  final user = FirebaseAuth.instance.currentUser;
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -125,7 +128,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created...
-        title: Text(widget.title),
+        title: Text('Signed in as ${widget.user!.email}'),
+        backgroundColor: Colors.brown[700],
+        leading: MaterialButton(
+          onPressed: () {
+            FirebaseAuth.instance.signOut();
+          },
+          child: Icon(Icons.logout),
+        ),
       ),
 
       body: chooseList(),
@@ -138,6 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
               bottom: 0,
               right: 0,
               child: FloatingActionButton(
+                backgroundColor: Colors.brown[700],
                 onPressed: () async {
                   final name = await openDialog();
                   if (name == null || name.isEmpty) return;
@@ -157,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: const Icon(Icons.add),
               ),
             ),
-          ],
+            ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,

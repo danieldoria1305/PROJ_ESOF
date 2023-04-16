@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:app/model/tree_member.dart';
+import 'package:GenealogyGuru/model/tree_member.dart';
 import 'package:intl/intl.dart';
 
 class TreeScreen extends StatefulWidget {
