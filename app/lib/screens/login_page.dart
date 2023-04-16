@@ -19,25 +19,20 @@ class _LoginPageState extends State<LoginPage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Icon(
-                  Icons.balance,
-                  size: 100,
+                Image.asset(
+                  "assets/app_icon.png",
+                  width: 200,
+                  height: 200,
                 ),
                 SizedBox(height: 25),
                 Text(
                     "Hello Again!",
                   style: GoogleFonts.bebasNeue(
                     fontSize: 52,
+                    color: Colors.brown[700],
                   ),
                 ),
-                SizedBox(height: 10),
-                Text(
-                    "Welcome back you've been missed!",
-                    style: TextStyle(
-                      fontSize: 20,
-                    )
-                ),
-                SizedBox(height: 50),
+                SizedBox(height: 40),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0),
                   child: Container(
@@ -84,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Container(
                     padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                        color: Colors.greenAccent[700],
+                        color: Colors.brown[700],
                         borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
