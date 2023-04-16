@@ -1,9 +1,12 @@
 import 'dart:core';
-import 'package:app/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:app/screens/login_page.dart';
+import "package:firebase_core/firebase_core.dart";
 
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
-void main() {
   runApp(const MyApp());
 }
 
@@ -19,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: const HomeScreen(title: 'GenealogyGuru'),
+      home: LoginPage(),// const HomeScreen(title: 'GenealogyGuru'),
     );
   }
 }
