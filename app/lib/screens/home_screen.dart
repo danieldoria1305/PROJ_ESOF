@@ -29,48 +29,13 @@ class TreeWidget extends StatelessWidget {
       ),
     );
   }
-  /*
-  @override
-  Widget build(BuildContext context) {
-    /*
-    return Container(
-      padding: EdgeInsets.fromLTRB(65, 0, 65, 0),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(treeName),
-          const Icon(Icons.star),
-        ],
-      ),
-    );*/
-    return Card(
-      margin: EdgeInsets.fromLTRB(0, 1, 0, 1),
-      child: ListTile(
-        trailing: Icon(Icons.star_border_outlined,
-            color: Colors.amber[400]
-        ),
-        title: Text(treeName),
-      ),
-    );
-  } */
 }
 
 class HomeScreen extends StatefulWidget {
-  HomeScreen({super.key, required this.title});
-
   final user = FirebaseAuth.instance.currentUser;
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
+
+  HomeScreen({super.key, required this.title});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -101,7 +66,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: const Text(
           'No trees found. Try creating one!',
           style: TextStyle(
-            fontFamily: "Times New Roman",
             fontSize: 24,
             textBaseline: TextBaseline.alphabetic,
           ),
