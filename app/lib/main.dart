@@ -1,6 +1,6 @@
 import 'dart:core';
 import 'package:flutter/material.dart';
-import 'package:GenealogyGuru/screens/login_page.dart';
+import 'package:GenealogyGuru/auth/main_screen.dart';
 import "package:firebase_core/firebase_core.dart";
 
 void main() async {
@@ -17,12 +17,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'GenealogyGuru',
-      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.green,
+        primarySwatch: Colors.brown
       ),
-      home: LoginPage(),// const HomeScreen(title: 'GenealogyGuru'),
+      debugShowCheckedModeBanner: false,
+      home: MainScreen(),// const HomeScreen(title: 'GenealogyGuru'),
     );
   }
 }
