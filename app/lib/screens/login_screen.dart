@@ -18,9 +18,42 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   Future signIn() async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Center(
+              child: CircularProgressIndicator(),
+            );
+        }
+    );
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+    } on FirebaseAuthException catch (e) {
+      Navigator.of(context).pop();
+      _showErrorDialog(e.message.toString());
+      return;
+    }
+    Navigator.of(context).pop();
+  }
+
+  void _showErrorDialog(String errorMessage) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Error"),
+            content: Text(errorMessage),
+            actions: [
+              TextButton(
+                child: Text("OK"),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          );
+        }
     );
   }
 
