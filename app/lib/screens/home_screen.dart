@@ -83,8 +83,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static List<Widget> trees = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  static List<Widget> trees = [];
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +125,33 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       drawer: isLargeScreen ? null : _drawer(),
-      body: chooseList(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _db.collection('users').doc(widget.user?.uid).collection('trees').snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          }
+          final List<DocumentSnapshot> documents = snapshot.data!.docs;
+          if (documents.isEmpty) {
+            return Center(child: Text('No trees found. Try creating one!'));
+          }
+          return ListView.builder(
+            itemCount: documents.length,
+            itemBuilder: (BuildContext context, int index) {
+              final tree = documents[index];
+              return TreeWidget(
+                treeName: tree['name'],
+                onDelete: () {
+                  deleteTree(tree['name']);
+                },
+              );
+            },
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: addTree,
         tooltip: 'Add Tree',
@@ -183,54 +210,43 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  Widget chooseList() {
-    if (trees.isEmpty)
-      return Container(
-        child: Center(
-          child: const Text(
-            'No trees found. Try creating one!',
-            style: TextStyle(
-              fontSize: 24,
-              textBaseline: TextBaseline.alphabetic,
-            ),
-          ),
-        ),
-      );
-    return Container(
-      padding: EdgeInsets.fromLTRB(50, 0, 50, 0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: trees,
-      ),
-    );
+  void deleteTree(String treeName) async {
+    // Delete the tree from the database
+    final uid = widget.user!.uid;
+    final treesCollection = _db
+        .collection('users')
+        .doc(uid)
+        .collection('trees');
+    await treesCollection.doc(treeName).delete();
+
+    // Delete the tree from the list of trees
+    setState(() {
+      trees.removeWhere((tree) => (tree as TreeWidget).treeName == treeName);
+    });
   }
 
   void addTree() async {
     final name = await openDialog();
-    if (name == null || name.isEmpty) return;
+    if (name != null) {
+      // Add the tree to the database
+      final uid = widget.user!.uid;
+      final treesCollection = _db
+          .collection('users')
+          .doc(uid)
+          .collection('trees');
+      await treesCollection.doc(name).set({'name': name});
 
-    setState(() {
-      trees.add(
-        TreeWidget(
-            treeName: name,
-            onDelete: () {
-              setState(() {
-                trees.removeWhere((widget) =>
-                    widget is TreeWidget && widget.treeName == name);
-              });
-              FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(widget.user!.uid)
-                  .collection('trees')
-                  .doc(name)
-                  .delete();
-            }),
-      );
-    });
+      // Add the tree to the list of trees
+      setState(() {
+        trees.add(TreeWidget(
+          treeName: name,
+          onDelete: () async {
+            deleteTree(name);
+          },
 
-    FirebaseFirestore.instance.collection('users').doc(widget.user!.uid).collection('trees').doc(name).set({
-      'name': name,
-    });
+        ));
+      });
+    }
   }
 
   Future<String?> openDialog() => showDialog<String>(
