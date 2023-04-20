@@ -1,4 +1,5 @@
 import 'package:GenealogyGuru/screens/tree_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -217,28 +218,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 trees.removeWhere((widget) =>
                     widget is TreeWidget && widget.treeName == name);
               });
+              FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(widget.user!.uid)
+                  .collection('trees')
+                  .doc(name)
+                  .delete();
             }),
       );
     });
+
+    FirebaseFirestore.instance.collection('users').doc(widget.user!.uid).collection('trees').doc(name).set({
+      'name': name,
+    });
   }
-  /*
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: ResponsiveNavBar(),
-      ),
-      body: chooseList(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: addTree,
-        tooltip: 'Add Tree',
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    );
-  }
-  */
+
   Future<String?> openDialog() => showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
