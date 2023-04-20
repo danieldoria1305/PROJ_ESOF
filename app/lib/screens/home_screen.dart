@@ -40,7 +40,7 @@ class _ProfileIcon extends StatelessWidget {
   }
 }
 
-
+/*
 class TreeWidget extends StatelessWidget {
   final String treeName;
   final VoidCallback onDelete;
@@ -71,6 +71,75 @@ class TreeWidget extends StatelessWidget {
     );
   }
 }
+
+ */
+
+class TreeWidget extends StatelessWidget {
+  final String treeName;
+  final VoidCallback onDelete;
+
+  const TreeWidget({Key? key, required this.treeName, required this.onDelete})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Dismissible(
+      key: UniqueKey(),
+      background: Container(
+        color: Colors.red,
+        child: const Padding(
+          padding: EdgeInsets.all(15),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              'Delete',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+              ),
+            ),
+          ),
+        ),
+      ),
+      onDismissed: (_) => onDelete(),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 3,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ListTile(
+          contentPadding:
+          const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+          leading: const Icon(
+            Icons.people_alt_outlined,
+            size: 40,
+          ),
+          title: Text(
+            treeName,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
+          subtitle: const Text(
+            'Family Tree',
+            style: TextStyle(
+              fontSize: 16,
+            ),
+          ),
+          trailing: const Icon(Icons.chevron_right),
+        ),
+      ),
+    );
+  }
+}
+
 
 class HomeScreen extends StatefulWidget {
   final user = FirebaseAuth.instance.currentUser;
@@ -136,7 +205,13 @@ class _HomeScreenState extends State<HomeScreen> {
           }
           final List<DocumentSnapshot> documents = snapshot.data!.docs;
           if (documents.isEmpty) {
-            return Center(child: Text('No trees found. Try creating one!'));
+            return Center(
+                child: Text('No trees found. Try creating one!',
+                style: TextStyle(
+                    fontSize: 24,
+                ),
+                ),
+            );
           }
           return ListView.builder(
             itemCount: documents.length,
