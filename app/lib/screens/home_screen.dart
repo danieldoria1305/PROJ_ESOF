@@ -9,6 +9,8 @@ final List<String> _menuItems = <String>[
   'Settings',
 ];
 
+final FirebaseFirestore _db = FirebaseFirestore.instance;
+
 enum Menu { itemOne, itemTwo, itemThree }
 
 class _ProfileIcon extends StatelessWidget {
@@ -76,64 +78,86 @@ class TreeWidget extends StatelessWidget {
 
 class TreeWidget extends StatelessWidget {
   final String treeName;
-  final VoidCallback onDelete;
+  final userId;
+  final treeId;
 
-  const TreeWidget({Key? key, required this.treeName, required this.onDelete})
+  void deleteTree(String treeId) async {
+    // Delete the tree from the database
+    final uid = userId;
+    final treesCollection = _db
+        .collection('users')
+        .doc(uid)
+        .collection('trees');
+    await treesCollection.doc(treeId).delete();
+  }
+
+  const TreeWidget({Key? key, required this.treeName, required this.userId, required this.treeId})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      key: UniqueKey(),
-      background: Container(
-        color: Colors.red,
-        child: const Padding(
-          padding: EdgeInsets.all(15),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              'Delete',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => TreeScreen(treeName: treeName)),
+        );
+      },
+      child: Dismissible(
+        onDismissed: (direction) {
+          deleteTree(treeId);
+        },
+        key: UniqueKey(),
+        background: Container(
+          color: Colors.red,
+          child: const Padding(
+            padding: EdgeInsets.all(15),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                'Delete',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                ),
               ),
             ),
           ),
         ),
-      ),
-      onDismissed: (_) => onDelete(),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 3,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: ListTile(
-          contentPadding:
-          const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-          leading: const Icon(
-            Icons.people_alt_outlined,
-            size: 40,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 3,
+                offset: Offset(0, 3),
+              ),
+            ],
           ),
-          title: Text(
-            treeName,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
+          child: ListTile(
+            contentPadding:
+            const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+            leading: const Icon(
+              Icons.people_alt_outlined,
+              size: 40,
             ),
-          ),
-          subtitle: const Text(
-            'Family Tree',
-            style: TextStyle(
-              fontSize: 16,
+            title: Text(
+              treeName,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
             ),
+            subtitle: const Text(
+              'Family Tree',
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            trailing: const Icon(Icons.chevron_right),
           ),
-          trailing: const Icon(Icons.chevron_right),
         ),
       ),
     );
@@ -153,8 +177,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-  static List<Widget> trees = [];
 
   @override
   Widget build(BuildContext context) {
@@ -219,9 +241,8 @@ class _HomeScreenState extends State<HomeScreen> {
               final tree = documents[index];
               return TreeWidget(
                 treeName: tree['name'],
-                onDelete: () {
-                  deleteTree(tree['name']);
-                },
+                userId: widget.user!.uid,
+                treeId: tree.id,
               );
             },
           );
@@ -285,21 +306,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  void deleteTree(String treeName) async {
-    // Delete the tree from the database
-    final uid = widget.user!.uid;
-    final treesCollection = _db
-        .collection('users')
-        .doc(uid)
-        .collection('trees');
-    await treesCollection.doc(treeName).delete();
-
-    // Delete the tree from the list of trees
-    setState(() {
-      trees.removeWhere((tree) => (tree as TreeWidget).treeName == treeName);
-    });
-  }
-
   void addTree() async {
     final name = await openDialog();
     if (name != null) {
@@ -310,17 +316,6 @@ class _HomeScreenState extends State<HomeScreen> {
           .doc(uid)
           .collection('trees');
       await treesCollection.doc(name).set({'name': name});
-
-      // Add the tree to the list of trees
-      setState(() {
-        trees.add(TreeWidget(
-          treeName: name,
-          onDelete: () async {
-            deleteTree(name);
-          },
-
-        ));
-      });
     }
   }
 
