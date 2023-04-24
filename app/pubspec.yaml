@@ -38,6 +38,7 @@ dependencies:
   google_fonts: ^4.0.3
   firebase_auth: ^4.4.1
   cloud_firestore: ^4.5.1
+  flutter_gherkin: ^2.0.0
 
 dev_dependencies:
   flutter_test:

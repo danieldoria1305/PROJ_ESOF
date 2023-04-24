@@ -2,6 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:GenealogyGuru/model/tree_member.dart';
 import 'package:intl/intl.dart';
 
+
+class MemberWidget extends StatelessWidget {
+  final String name;
+  final VoidCallback onDismissed;
+
+  MemberWidget({
+    required this.name,
+    required this.onDismissed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dismissible(
+      key: UniqueKey(),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) => onDismissed(),
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        child: Icon(Icons.delete, color: Colors.white),
+      ),
+      child: Card(
+        elevation: 2.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: ListTile(
+          leading: CircleAvatar(
+            child: Text(name.substring(0, 1).toUpperCase()),
+          ),
+          title: Text(name),
+        ),
+      ),
+    );
+  }
+}
+
+
 class TreeScreen extends StatefulWidget {
   final String treeName;
 
@@ -335,141 +374,3 @@ class _AddMemberFormState extends State<AddMemberForm> {
     );
   }
 }
-
-/*
-class AddMemberForm extends StatefulWidget {
-  final Function(FamilyMember) onSubmit;
-
-  AddMemberForm({required this.onSubmit});
-
-  @override
-  _AddMemberFormState createState() => _AddMemberFormState();
-}
-
-class _AddMemberFormState extends State<AddMemberForm> {
-  final _formKey = GlobalKey<FormState>();
-
-  String? _photo;
-  String _name = "";
-  DateTime _dateOfBirth = DateTime.now();
-  DateTime? _dateOfDeath;
-  String _gender = "";
-  String _occupation = "";
-
-  void _submitForm() {
-    if (_formKey.currentState != null && _formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      widget.onSubmit(FamilyMember(
-        photo: _photo,
-        name: _name,
-        dateOfBirth: _dateOfBirth,
-        //dateOfDeath: _dateOfDeath,
-        gender: _gender,
-        occupation: _occupation,
-      ));
-      Navigator.of(context).pop();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              decoration: InputDecoration(labelText: 'Name'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a name';
-                }
-                return null;
-              },
-              onSaved: (value) => _name = value!,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: 'Date of Birth'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a date of birth';
-                }
-                return null;
-              },
-              onTap: () async {
-                final DateTime? date = await showDatePicker(
-                  context: context,
-                  initialDate: _dateOfBirth,
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime.now(),
-                );
-                if (date != null) {
-                  setState(() {
-                    _dateOfBirth = date;
-                  });
-                }
-              },
-              readOnly: true,
-              controller: TextEditingController(
-                  text: DateFormat.yMMMMd().format(_dateOfBirth)),
-            ),
-            /*TextFormField(
-              decoration: InputDecoration(labelText: 'Date of Death'),
-              onTap: () async {
-                final DateTime? date = await showDatePicker(
-                  context: context,
-                  initialDate: _dateOfDeath ?? DateTime.now(),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime.now(),
-                );
-                if (date != null) {
-                  setState(() {
-                    _dateOfDeath = date;
-                  });
-                }
-              },
-              readOnly: true,
-              controller: TextEditingController(
-                  text: _dateOfDeath != null
-                      ? DateFormat.yMMMMd().format(_dateOfDeath!)
-                      : ""),
-            ),*/
-            DropdownButtonFormField<String>(
-              decoration: InputDecoration(labelText: 'Gender'),
-              items: ['Male', 'Female', 'Non-binary', 'Other']
-                  .map((gender) => DropdownMenuItem<String>(
-                        value: gender,
-                        child: Text(gender),
-                      ))
-                  .toList(),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please select a gender';
-                }
-                return null;
-              },
-              onChanged: (value) => setState(() => _gender = value!),
-              value: _gender?.isNotEmpty == true ? _gender : null,
-            ),
-            TextFormField(
-              decoration: InputDecoration(labelText: 'Occupation'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an occupation';
-                }
-                return null;
-              },
-              onSaved: (value) => _occupation = value!,
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _submitForm,
-              child: Text('Add Member'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}*/
