@@ -1,4 +1,5 @@
 import 'package:GenealogyGuru/screens/tree_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +8,8 @@ final List<String> _menuItems = <String>[
   'Contact',
   'Settings',
 ];
+
+final FirebaseFirestore _db = FirebaseFirestore.instance;
 
 enum Menu { itemOne, itemTwo, itemThree }
 
@@ -39,7 +42,7 @@ class _ProfileIcon extends StatelessWidget {
   }
 }
 
-
+/*
 class TreeWidget extends StatelessWidget {
   final String treeName;
   final VoidCallback onDelete;
@@ -71,6 +74,97 @@ class TreeWidget extends StatelessWidget {
   }
 }
 
+ */
+
+class TreeWidget extends StatelessWidget {
+  final String treeName;
+  final userId;
+  final treeId;
+
+  void deleteTree(String treeId) async {
+    // Delete the tree from the database
+    final uid = userId;
+    final treesCollection = _db
+        .collection('users')
+        .doc(uid)
+        .collection('trees');
+    await treesCollection.doc(treeId).delete();
+  }
+
+  const TreeWidget({Key? key, required this.treeName, required this.userId, required this.treeId})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => TreeScreen(treeName: treeName)),
+        );
+      },
+      child: Dismissible(
+        onDismissed: (direction) {
+          deleteTree(treeId);
+        },
+        key: UniqueKey(),
+        background: Container(
+          color: Colors.red,
+          child: const Padding(
+            padding: EdgeInsets.all(15),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                'Delete',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 3,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: ListTile(
+            contentPadding:
+            const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+            leading: const Icon(
+              Icons.people_alt_outlined,
+              size: 40,
+            ),
+            title: Text(
+              treeName,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            subtitle: const Text(
+              'Family Tree',
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
 class HomeScreen extends StatefulWidget {
   final user = FirebaseAuth.instance.currentUser;
   final String title;
@@ -82,7 +176,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static List<Widget> trees = [];
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -123,7 +216,38 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       drawer: isLargeScreen ? null : _drawer(),
-      body: chooseList(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _db.collection('users').doc(widget.user?.uid).collection('trees').snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          }
+          final List<DocumentSnapshot> documents = snapshot.data!.docs;
+          if (documents.isEmpty) {
+            return Center(
+                child: Text('No trees found. Try creating one!',
+                style: TextStyle(
+                    fontSize: 24,
+                ),
+                ),
+            );
+          }
+          return ListView.builder(
+            itemCount: documents.length,
+            itemBuilder: (BuildContext context, int index) {
+              final tree = documents[index];
+              return TreeWidget(
+                treeName: tree['name'],
+                userId: widget.user!.uid,
+                treeId: tree.id,
+              );
+            },
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: addTree,
         tooltip: 'Add Tree',
@@ -182,63 +306,19 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  Widget chooseList() {
-    if (trees.isEmpty)
-      return Container(
-        child: Center(
-          child: const Text(
-            'No trees found. Try creating one!',
-            style: TextStyle(
-              fontSize: 24,
-              textBaseline: TextBaseline.alphabetic,
-            ),
-          ),
-        ),
-      );
-    return Container(
-      padding: EdgeInsets.fromLTRB(50, 0, 50, 0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: trees,
-      ),
-    );
-  }
-
   void addTree() async {
     final name = await openDialog();
-    if (name == null || name.isEmpty) return;
+    if (name != null) {
+      // Add the tree to the database
+      final uid = widget.user!.uid;
+      final treesCollection = _db
+          .collection('users')
+          .doc(uid)
+          .collection('trees');
+      await treesCollection.doc(name).set({'name': name});
+    }
+  }
 
-    setState(() {
-      trees.add(
-        TreeWidget(
-            treeName: name,
-            onDelete: () {
-              setState(() {
-                trees.removeWhere((widget) =>
-                    widget is TreeWidget && widget.treeName == name);
-              });
-            }),
-      );
-    });
-  }
-  /*
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: ResponsiveNavBar(),
-      ),
-      body: chooseList(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: addTree,
-        tooltip: 'Add Tree',
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    );
-  }
-  */
   Future<String?> openDialog() => showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
