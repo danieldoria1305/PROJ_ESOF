@@ -108,6 +108,27 @@ class TreeWidget extends StatelessWidget {
         onDismissed: (direction) {
           deleteTree(treeId);
         },
+        confirmDismiss: (direction) async {
+          return await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Confirm'),
+                content: Text('Are you sure you want to delete this tree?'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text('CANCEL'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text('DELETE'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
         key: UniqueKey(),
         background: Container(
           color: Colors.red,
