@@ -42,40 +42,6 @@ class _ProfileIcon extends StatelessWidget {
   }
 }
 
-/*
-class TreeWidget extends StatelessWidget {
-  final String treeName;
-  final VoidCallback onDelete;
-
-  const TreeWidget({Key? key, required this.treeName, required this.onDelete})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => TreeScreen(treeName: treeName)),
-        );
-      },
-      child: Card(
-        margin: EdgeInsets.fromLTRB(0, 1, 0, 1),
-        child: ListTile(
-          trailing: IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: onDelete,
-          ),
-          title: Text(treeName),
-        ),
-      ),
-    );
-  }
-}
-
- */
-
 class TreeWidget extends StatelessWidget {
   final String treeName;
   final userId;
@@ -101,7 +67,7 @@ class TreeWidget extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => TreeScreen(treeName: treeName)),
+              builder: (context) => TreeScreen(treeName: treeName, userId: userId, treeId: treeId)),
         );
       },
       child: Dismissible(
@@ -336,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .collection('users')
           .doc(uid)
           .collection('trees');
-      await treesCollection.doc(name).set({'name': name});
+      await treesCollection.doc().set({'name': name});
     }
   }
 

@@ -1,15 +1,34 @@
+import 'dart:ui';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:GenealogyGuru/model/tree_member.dart';
 import 'package:intl/intl.dart';
 
+final _db = FirebaseFirestore.instance;
 
 class MemberWidget extends StatelessWidget {
   final String name;
-  final VoidCallback onDismissed;
+  final userId;
+  final treeId;
+  final memberId;
+
+  void deleteMember(String memberId) async {
+    // Delete the member from the database
+    final uid = userId;
+    final membersCollection = _db
+        .collection('users')
+        .doc(uid)
+        .collection('trees')
+        .doc(treeId)
+        .collection('members');
+    await membersCollection.doc(memberId).delete();
+  }
 
   MemberWidget({
     required this.name,
-    required this.onDismissed,
+    required this.userId,
+    required this.treeId,
+    required this.memberId,
   });
 
   @override
@@ -17,7 +36,29 @@ class MemberWidget extends StatelessWidget {
     return Dismissible(
       key: UniqueKey(),
       direction: DismissDirection.endToStart,
-      onDismissed: (_) => onDismissed(),
+      onDismissed: (direction) {
+        deleteMember(memberId);
+      },
+      confirmDismiss: (direction) async {
+        return await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Confirm'),
+              content: Text('Are you sure you wish to delete this item?'),
+              actions: <Widget>[
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text('CANCEL')),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text('DELETE'),
+                ),
+              ],
+            );
+          },
+        );
+      },
       background: Container(
         color: Colors.red,
         alignment: Alignment.centerRight,
@@ -43,22 +84,33 @@ class MemberWidget extends StatelessWidget {
 
 class TreeScreen extends StatefulWidget {
   final String treeName;
+  final treeId;
+  final userId;
 
-  const TreeScreen({Key? key, required this.treeName}) : super(key: key);
+  const TreeScreen({Key? key, required this.treeName, required this.userId, required this.treeId}) : super(key: key);
 
   @override
   _TreeScreenState createState() => _TreeScreenState();
 }
 
 class _TreeScreenState extends State<TreeScreen> {
-  List<FamilyMember> familyMembers = [];
-
-  void addFamilyMember(FamilyMember member) {
-    setState(() {
-      familyMembers.add(member);
+  void addFamilyMember(String name, String occupation, String? photo, DateTime birthDate, String gender) async {
+    final uid = widget.userId;
+    final membersCollection = _db
+        .collection('users')
+        .doc(uid)
+        .collection('trees')
+        .doc(widget.treeId)
+        .collection('members');
+    await membersCollection.doc().set({
+      'name': name,
+      'gender': gender,
+      'occupation': occupation,
+      'photo': photo,
+      'birthDate': birthDate,
     });
   }
-
+  /*
   Widget chooseList() {
     if (familyMembers.isEmpty) {
       return Center(
@@ -156,53 +208,46 @@ class _TreeScreenState extends State<TreeScreen> {
       );
     }
   }
-
-
-  /*
-  Widget chooseList() {
-    if (familyMembers.isEmpty) {
-      return
-        Center(
-          child: Text('No family members yet!',
-            style: TextStyle(fontSize: 24)
-            ),
-          );
-    } else {
-
-      return Container(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: familyMembers.map((member) {
-            return Card(
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(member.photo ?? ''),
-                ),
-                title: Text(member.name,
-                    style: TextStyle(fontSize: 14, color: Colors.black)),
-                subtitle: Text(DateFormat.yMMMd().format(member.dateOfBirth)),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    setState(() {
-                      familyMembers.remove(member);
-                    });
-                  },
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      );
-    }
-  } */
-
+*/
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.treeName),
       ),
-      body: chooseList(),
+      // body: chooseList(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _db.collection('users').doc(widget.userId).collection('trees').doc(widget.treeId).collection('members').snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          }
+          final List<DocumentSnapshot> documents = snapshot.data!.docs;
+          if (documents.isEmpty) {
+            return Center(
+              child: Text('No members found. Try adding one!',
+                style: TextStyle(
+                  fontSize: 24,
+                ),
+              ),
+            );
+          }
+          return ListView.builder(
+            itemCount: documents.length,
+            itemBuilder: (BuildContext context, int index) {
+              final member = documents[index];
+              return MemberWidget(
+                name: member['name'],
+                userId: widget.userId,
+                treeId: widget.treeId,
+                memberId: member.id,
+              );
+            },
+          );
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showDialog(
@@ -210,12 +255,12 @@ class _TreeScreenState extends State<TreeScreen> {
             builder: (context) {
               return AlertDialog(
                 content: AddMemberForm(onSubmit: addFamilyMember),
-                actions: [
+                /* actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     child: Text('Close'),
                   ),
-                ],
+                ], */
               );
             },
           );
@@ -227,7 +272,7 @@ class _TreeScreenState extends State<TreeScreen> {
 }
 
 class AddMemberForm extends StatefulWidget {
-  final Function(FamilyMember) onSubmit;
+  final Function(String, String, String?, DateTime, String) onSubmit;
 
   AddMemberForm({required this.onSubmit});
 
@@ -248,14 +293,14 @@ class _AddMemberFormState extends State<AddMemberForm> {
   void _submitForm() {
     if (_formKey.currentState != null && _formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      widget.onSubmit(FamilyMember(
-        photo: _photo,
-        name: _name,
-        dateOfBirth: _dateOfBirth,
+      widget.onSubmit(
+        _name,
+        _occupation,
+        _photo,
+        _dateOfBirth,
         //dateOfDeath: _dateOfDeath,
-        gender: _gender,
-        occupation: _occupation,
-      ));
+        _gender,
+      );
       Navigator.of(context).pop();
     }
   }
