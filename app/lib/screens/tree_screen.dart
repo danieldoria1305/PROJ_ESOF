@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:GenealogyGuru/screens/edit_member_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -8,79 +9,119 @@ final _db = FirebaseFirestore.instance;
 
 class MemberWidget extends StatelessWidget {
   final String name;
-  final userId;
-  final treeId;
-  final memberId;
+  final String userId;
+  final String treeId;
+  final String memberId;
+  final DateTime birthDate;
+  final String gender;
+  final String photoUrl;
 
-  void deleteMember(String memberId) async {
-    // Delete the member from the database
-    final uid = userId;
-    final membersCollection = _db
-        .collection('users')
-        .doc(uid)
-        .collection('trees')
-        .doc(treeId)
-        .collection('members');
-    await membersCollection.doc(memberId).delete();
-  }
-
-  MemberWidget({
+  const MemberWidget({
     required this.name,
     required this.userId,
     required this.treeId,
     required this.memberId,
+    required this.birthDate,
+    required this.gender,
+    this.photoUrl = '',
   });
+
+  void _deleteMember(BuildContext context) async {
+    try {
+      final membersCollection = _db
+          .collection('users')
+          .doc(userId)
+          .collection('trees')
+          .doc(treeId)
+          .collection('members');
+      await membersCollection.doc(memberId).delete();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete member: $e'),
+        ),
+      );
+    }
+  }
+
+  Future<bool> _showDeleteConfirmationDialog(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirm'),
+        content: Text('Are you sure you wish to delete this item?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('DELETE'),
+          ),
+        ],
+      ),
+    );
+    return confirmed ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Dismissible(
-      key: UniqueKey(),
+      key: ValueKey(memberId),
       direction: DismissDirection.endToStart,
-      onDismissed: (direction) {
-        deleteMember(memberId);
-      },
-      confirmDismiss: (direction) async {
-        return await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Confirm'),
-              content: Text('Are you sure you wish to delete this item?'),
-              actions: <Widget>[
-                TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text('CANCEL')),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text('DELETE'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      onDismissed: (direction) => _deleteMember(context),
+      confirmDismiss: (direction) => _showDeleteConfirmationDialog(context),
       background: Container(
         color: Colors.red,
         alignment: Alignment.centerRight,
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
-        child: Icon(Icons.delete, color: Colors.white),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: const Icon(Icons.delete, color: Colors.white),
       ),
       child: Card(
+        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         elevation: 2.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: ListTile(
           leading: CircleAvatar(
-            child: Text(name.substring(0, 1).toUpperCase()),
+            backgroundImage: NetworkImage(photoUrl),
           ),
-          title: Text(name),
+          title: Text(
+            name,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4.0),
+              Text(
+                'Gender: $gender',
+                style: TextStyle(fontSize: 12.0),
+              ),
+              const SizedBox(height: 2.0),
+              Text(
+                'Birth Date: ${DateFormat('yyyy-MM-dd').format(birthDate)}',
+                style: TextStyle(fontSize: 12.0),
+              ),
+            ],
+          ),
+          trailing: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => EditMemberScreen(memberId: memberId, userId: userId, treeId: treeId)),
+              );
+            },
+            icon: Icon(Icons.edit),
+          ),
         ),
       ),
     );
   }
 }
-
 
 class TreeScreen extends StatefulWidget {
   final String treeName;
@@ -94,7 +135,21 @@ class TreeScreen extends StatefulWidget {
 }
 
 class _TreeScreenState extends State<TreeScreen> {
-  void addFamilyMember(String name, String occupation, String? photo, DateTime birthDate, String gender) async {
+  late Stream<QuerySnapshot> _membersStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _membersStream = FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.userId)
+        .collection('trees')
+        .doc(widget.treeId)
+        .collection('members')
+        .snapshots();
+  }
+
+  void addFamilyMember(String name, String occupation, String? photoUrl, DateTime birthDate, String gender) async {
     final uid = widget.userId;
     final membersCollection = _db
         .collection('users')
@@ -106,109 +161,11 @@ class _TreeScreenState extends State<TreeScreen> {
       'name': name,
       'gender': gender,
       'occupation': occupation,
-      'photo': photo,
+      'photoUrl': photoUrl,
       'birthDate': birthDate,
     });
   }
-  /*
-  Widget chooseList() {
-    if (familyMembers.isEmpty) {
-      return Center(
-        child: Text(
-          'No family members yet!',
-          style: TextStyle(fontSize: 24),
-        ),
-      );
-    } else {
-      return Container(
-        padding: EdgeInsets.all(16),
-        child: ListView.builder(
-          itemCount: familyMembers.length,
-          itemBuilder: (context, index) {
-            final member = familyMembers[index];
-            return Dismissible(
-              key: UniqueKey(),
-              direction: DismissDirection.endToStart,
-              background: Container(
-                color: Colors.red,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Icon(Icons.delete, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text(
-                      'Delete',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    SizedBox(width: 16),
-                  ],
-                ),
-              ),
-              confirmDismiss: (direction) async {
-                return await showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Confirm'),
-                      content: Text('Are you sure you want to delete this member?'),
-                      actions: <Widget>[
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: Text('CANCEL'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(true),
-                          child: Text('DELETE'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              onDismissed: (direction) {
-                setState(() {
-                  familyMembers.removeAt(index);
-                });
-              },
-              child: Card(
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: NetworkImage(member.photo ?? ''),
-                  ),
-                  title: Text(
-                    member.name,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 8),
-                      Text(
-                        'Date of Birth: ${DateFormat.yMMMd().format(member.dateOfBirth)}',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Gender: ${member.gender}',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Occupation: ${member.occupation}',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      SizedBox(height: 8),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      );
-    }
-  }
-*/
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -216,7 +173,7 @@ class _TreeScreenState extends State<TreeScreen> {
       ),
       // body: chooseList(),
       body: StreamBuilder<QuerySnapshot>(
-        stream: _db.collection('users').doc(widget.userId).collection('trees').doc(widget.treeId).collection('members').snapshots(),
+        stream: _membersStream,
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
@@ -224,10 +181,10 @@ class _TreeScreenState extends State<TreeScreen> {
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
           }
-          final List<DocumentSnapshot> documents = snapshot.data!.docs;
-          if (documents.isEmpty) {
+          final List<DocumentSnapshot> members = snapshot.data!.docs;
+          if (members.isEmpty) {
             return Center(
-              child: Text('No members found. Try adding one!',
+              child: Text('No family members yet!',
                 style: TextStyle(
                   fontSize: 24,
                 ),
@@ -235,14 +192,16 @@ class _TreeScreenState extends State<TreeScreen> {
             );
           }
           return ListView.builder(
-            itemCount: documents.length,
+            itemCount: members.length,
             itemBuilder: (BuildContext context, int index) {
-              final member = documents[index];
+              final member = members[index];
               return MemberWidget(
                 name: member['name'],
                 userId: widget.userId,
                 treeId: widget.treeId,
                 memberId: member.id,
+                gender: member['gender'],
+                birthDate: member['birthDate'].toDate(),
               );
             },
           );
@@ -255,12 +214,6 @@ class _TreeScreenState extends State<TreeScreen> {
             builder: (context) {
               return AlertDialog(
                 content: AddMemberForm(onSubmit: addFamilyMember),
-                /* actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text('Close'),
-                  ),
-                ], */
               );
             },
           );
@@ -383,7 +336,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
                   return null;
                 },
                 onChanged: (value) => setState(() => _gender = value!),
-                value: _gender?.isNotEmpty == true ? _gender : null,
+                value: _gender.isNotEmpty == true ? _gender : null,
               ),
               SizedBox(height: 16),
               TextFormField(

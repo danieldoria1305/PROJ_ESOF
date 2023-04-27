@@ -48,7 +48,6 @@ class TreeWidget extends StatelessWidget {
   final treeId;
 
   void deleteTree(String treeId) async {
-    // Delete the tree from the database
     final uid = userId;
     final treesCollection = _db
         .collection('users')
