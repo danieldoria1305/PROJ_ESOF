@@ -16,7 +16,7 @@ class MemberWidget extends StatelessWidget {
   final String gender;
   final String photoUrl;
 
-  const MemberWidget({
+  MemberWidget({
     required this.name,
     required this.userId,
     required this.treeId,
@@ -128,7 +128,7 @@ class TreeScreen extends StatefulWidget {
   final treeId;
   final userId;
 
-  const TreeScreen({Key? key, required this.treeName, required this.userId, required this.treeId}) : super(key: key);
+  TreeScreen({Key? key, required this.treeName, required this.userId, required this.treeId}) : super(key: key);
 
   @override
   _TreeScreenState createState() => _TreeScreenState();

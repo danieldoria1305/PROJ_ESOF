@@ -24,10 +24,10 @@ class EditMemberScreen extends StatefulWidget {
 class _EditMemberScreenState extends State<EditMemberScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  String _name = '';
+  String? _name;
   DateTime _birthDate = DateTime.now();
-  String _gender = '';
-  String _occupation = '';
+  String? _gender;
+  String? _occupation;
 
   @override
   void initState() {
@@ -94,6 +94,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
         padding: EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
+          autovalidateMode: AutovalidateMode.always,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -110,6 +111,11 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
                   return null;
                 },
                 onSaved: (value) => _name = value ?? '',
+                onChanged: (value) {
+                  setState(() {
+                    _name = value;
+                  });
+                },
               ),
               SizedBox(height: 16.0),
               TextFormField(
@@ -143,21 +149,26 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
                   border: OutlineInputBorder(),
                 ),
                 items: [
-                  'Male',
-                  'Female',
-                  'Non-binary',
-                  'Other',
-                ]
-                    .map(
-                      (gender) => DropdownMenuItem<String>(
-                        value: gender,
-                        child: Text(gender),
-                      ),
-                    )
-                    .toList(),
+                  DropdownMenuItem<String>(
+                    value: 'Male',
+                    child: Text('Male'),
+                  ),
+                  DropdownMenuItem<String>(
+                    value: 'Female',
+                    child: Text('Female'),
+                  ),
+                  DropdownMenuItem<String>(
+                    value: 'Non-binary',
+                    child: Text('Non-binary'),
+                  ),
+                  DropdownMenuItem<String>(
+                    value: 'Other',
+                    child: Text('Other'),
+                  ),
+                ],
                 onChanged: (value) {
                   setState(() {
-                    _gender = value!;
+                    _gender = value ?? '';
                   });
                 },
               ),
@@ -170,11 +181,16 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter a occupation';
+                    return 'Please enter an occupation';
                   }
                   return null;
                 },
                 onSaved: (value) => _occupation = value ?? '',
+                onChanged: (value) {
+                  setState(() {
+                    _occupation = value;
+                  });
+                },
               ),
               SizedBox(height: 32.0),
               ElevatedButton(
