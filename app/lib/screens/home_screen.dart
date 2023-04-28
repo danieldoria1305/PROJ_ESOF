@@ -42,47 +42,12 @@ class _ProfileIcon extends StatelessWidget {
   }
 }
 
-/*
-class TreeWidget extends StatelessWidget {
-  final String treeName;
-  final VoidCallback onDelete;
-
-  const TreeWidget({Key? key, required this.treeName, required this.onDelete})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => TreeScreen(treeName: treeName)),
-        );
-      },
-      child: Card(
-        margin: EdgeInsets.fromLTRB(0, 1, 0, 1),
-        child: ListTile(
-          trailing: IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: onDelete,
-          ),
-          title: Text(treeName),
-        ),
-      ),
-    );
-  }
-}
-
- */
-
 class TreeWidget extends StatelessWidget {
   final String treeName;
   final userId;
   final treeId;
 
   void deleteTree(String treeId) async {
-    // Delete the tree from the database
     final uid = userId;
     final treesCollection = _db
         .collection('users')
@@ -101,12 +66,33 @@ class TreeWidget extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => TreeScreen(treeName: treeName)),
+              builder: (context) => TreeScreen(treeName: treeName, userId: userId, treeId: treeId)),
         );
       },
       child: Dismissible(
         onDismissed: (direction) {
           deleteTree(treeId);
+        },
+        confirmDismiss: (direction) async {
+          return await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text('Confirm'),
+                content: Text('Are you sure you want to delete this tree?'),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text('CANCEL'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text('DELETE'),
+                  ),
+                ],
+              );
+            },
+          );
         },
         key: UniqueKey(),
         background: Container(
@@ -315,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .collection('users')
           .doc(uid)
           .collection('trees');
-      await treesCollection.doc(name).set({'name': name});
+      await treesCollection.doc().set({'name': name});
     }
   }
 
