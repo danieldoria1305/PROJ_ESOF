@@ -123,6 +123,7 @@ class TreeScreen extends StatefulWidget {
 class _TreeScreenState extends State<TreeScreen> {
   late Stream<QuerySnapshot> _membersStream;
   String _selectedNationality = '';
+  String _selectedGender = '';
 
   @override
   void initState() {
@@ -133,6 +134,7 @@ class _TreeScreenState extends State<TreeScreen> {
         .collection('trees')
         .doc(widget.treeId)
         .collection('members')
+        .where('gender', isEqualTo: _selectedGender.isNotEmpty ? _selectedGender : null)
         .snapshots();
   }
 
@@ -234,8 +236,7 @@ class _TreeScreenState extends State<TreeScreen> {
     }
   }
 
-
-
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -243,48 +244,100 @@ class _TreeScreenState extends State<TreeScreen> {
       ),
       body: Column(
         children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: Container(
-              width: 150, // Set the desired width for the container
-              child: Column(
-                children: [
-                  FutureBuilder<List<String>>(
-                    future: fetchNationalities(),
-                    builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator();
-                      }
-                      if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
-                      }
-                      final List<String> nationalities = snapshot.data ?? [];
-                      return DropdownButtonFormField<String>(
-                        value: _selectedNationality,
-                        onChanged: _setSelectedNationality,
-                        items: [
-                          DropdownMenuItem<String>(
-                            value: '',
-                            child: Text('All Nationalities'),
-                          ),
-                          ...nationalities.map((nationality) {
-                            return DropdownMenuItem<String>(
-                              value: nationality,
-                              child: Text(nationality),
-                            );
-                          }).toList(),
-                        ],
-                        decoration: InputDecoration(
-                          hintText: 'Filter by Nationality',
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Container(
+                width: 150,
+                child: Column(
+                  children: [
+                    DropdownButtonFormField<String>(
+                      value: _selectedGender,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedGender = value!;
+                          _membersStream = FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(widget.userId)
+                              .collection('trees')
+                              .doc(widget.treeId)
+                              .collection('members')
+                              .where('gender', isEqualTo: _selectedGender.isNotEmpty ? _selectedGender : null)
+                              .snapshots();
+                        });
+                      },
+                      items: [
+                        DropdownMenuItem<String>(
+                          value: '',
+                          child: Text('All Genders'),
                         ),
-                        isExpanded: true,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                        DropdownMenuItem<String>(
+                          value: 'Male',
+                          child: Text('Male'),
+                        ),
+                        DropdownMenuItem<String>(
+                          value: 'Female',
+                          child: Text('Female'),
+                        ),
+                        DropdownMenuItem<String>(
+                          value: 'Non-binary',
+                          child: Text('Non-binary'),
+                        ),
+                        DropdownMenuItem<String>(
+                          value: 'Other',
+                          child: Text('Other'),
+                        ),
+                      ],
+                      decoration: InputDecoration(
+                        hintText: 'Filter by Gender',
+                      ),
+                      isExpanded: true,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
-            ),
+              Container(
+                width: 150,
+                child: Column(
+                  children: [
+                    FutureBuilder<List<String>>(
+                      future: fetchNationalities(),
+                      builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        }
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        }
+                        final List<String> nationalities = snapshot.data ?? [];
+                        return DropdownButtonFormField<String>(
+                          value: _selectedNationality,
+                          onChanged: _setSelectedNationality,
+                          items: [
+                            DropdownMenuItem<String>(
+                              value: '',
+                              child: Text('All Nationalities'),
+                            ),
+                            ...nationalities.map((nationality) {
+                              return DropdownMenuItem<String>(
+                                value: nationality,
+                                child: Text(nationality),
+                              );
+                            }).toList(),
+                          ],
+                          decoration: InputDecoration(
+                            hintText: 'Filter by Nationality',
+                          ),
+                          isExpanded: true,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ],
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
@@ -298,7 +351,6 @@ class _TreeScreenState extends State<TreeScreen> {
                 }
                 final List<DocumentSnapshot> members = snapshot.data!.docs;
 
-                // Apply filtering based on selected nationality
                 List<DocumentSnapshot> filteredMembers = members;
                 if (_selectedNationality.isNotEmpty) {
                   filteredMembers = members
@@ -309,7 +361,7 @@ class _TreeScreenState extends State<TreeScreen> {
                 if (filteredMembers.isEmpty) {
                   return Center(
                     child: Text(
-                      'No family members matching the filter',
+                      'No family members matching the filters',
                       style: TextStyle(
                         fontSize: 22,
                       ),
