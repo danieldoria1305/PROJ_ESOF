@@ -17,6 +17,7 @@ class MemberWidget extends StatelessWidget {
   final DateTime birthDate;
   final String gender;
   final String? photoUrl;
+  final void Function(String) onDeleteMember;
 
   MemberWidget({
     required this.name,
@@ -26,38 +27,8 @@ class MemberWidget extends StatelessWidget {
     required this.birthDate,
     required this.gender,
     this.photoUrl = '',
+    required this.onDeleteMember,
   });
-
-  void _deleteMember(BuildContext context) async {
-    try {
-      final membersCollection = _db
-          .collection('users')
-          .doc(userId)
-          .collection('trees')
-          .doc(treeId)
-          .collection('members');
-
-      // Fetch the member document to get the photo URL
-      final memberDoc = await membersCollection.doc(memberId).get();
-      final memberData = memberDoc.data();
-      final photoUrl = memberData?['photoUrl'] as String?;
-
-      // Delete the member document
-      await membersCollection.doc(memberId).delete();
-
-      // Delete the member's photo from Firebase Storage
-      if (photoUrl != null) {
-        final storageRef = FirebaseStorage.instance.refFromURL(photoUrl);
-        await storageRef.delete();
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to delete member: $e'),
-        ),
-      );
-    }
-  }
 
   Future<bool> _showDeleteConfirmationDialog(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -85,7 +56,7 @@ class MemberWidget extends StatelessWidget {
     return Dismissible(
       key: ValueKey(memberId),
       direction: DismissDirection.endToStart,
-      onDismissed: (direction) => _deleteMember(context),
+      onDismissed: (direction) => onDeleteMember(memberId),
       confirmDismiss: (direction) => _showDeleteConfirmationDialog(context),
       background: Container(
         color: Colors.red,
@@ -151,6 +122,7 @@ class TreeScreen extends StatefulWidget {
 
 class _TreeScreenState extends State<TreeScreen> {
   late Stream<QuerySnapshot> _membersStream;
+  String _selectedNationality = '';
 
   @override
   void initState() {
@@ -164,7 +136,13 @@ class _TreeScreenState extends State<TreeScreen> {
         .snapshots();
   }
 
-  void addFamilyMember(String name, String occupation, DateTime birthDate, String gender, XFile? photo) async {
+  void _setSelectedNationality(String? nationality) {
+    setState(() {
+      _selectedNationality = nationality!;
+    });
+  }
+
+  void addFamilyMember(String name, String nationality, DateTime birthDate, String gender, XFile? photo) async {
     final uid = widget.userId;
     final membersCollection = _db
         .collection('users')
@@ -187,53 +165,177 @@ class _TreeScreenState extends State<TreeScreen> {
     await membersCollection.doc().set({
       'name': name,
       'gender': gender,
-      'occupation': occupation,
+      'nationality': nationality,
       'photoUrl': uploadedPhotoUrl,
       'birthDate': birthDate,
     });
+    _updateFilterOptions();
   }
+
+  void _deleteMember(String memberId) async {
+    try {
+      final membersCollection = _db
+          .collection('users')
+          .doc(widget.userId)
+          .collection('trees')
+          .doc(widget.treeId)
+          .collection('members');
+
+      // Fetch the member document to get the photo URL
+      final memberDoc = await membersCollection.doc(memberId).get();
+      final memberData = memberDoc.data();
+      final photoUrl = memberData?['photoUrl'] as String?;
+
+      await membersCollection.doc(memberId).delete();
+
+      if (photoUrl != null) {
+        final storageRef = FirebaseStorage.instance.refFromURL(photoUrl);
+        await storageRef.delete();
+      }
+
+      _updateFilterOptions();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete member: $e'),
+        ),
+      );
+    }
+  }
+
+  void _updateFilterOptions() {
+    setState(() {});
+  }
+
+  Future<List<String>> fetchNationalities() async {
+    try {
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userId)
+          .collection('trees')
+          .doc(widget.treeId)
+          .collection('members')
+          .get();
+      final List<QueryDocumentSnapshot> documents = snapshot.docs;
+
+      // Extract unique nationalities from documents
+      final Set<String> uniqueNationalities = Set<String>();
+      for (var doc in documents) {
+        final nationality = doc['nationality'];
+        if (nationality != null && nationality is String) {
+          uniqueNationalities.add(nationality);
+        }
+      }
+
+      return uniqueNationalities.toList();
+    } catch (e) {
+      print('Error fetching nationalities: $e');
+      return [];
+    }
+  }
+
+
 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.treeName),
       ),
-      // body: chooseList(),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _membersStream,
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
-          final List<DocumentSnapshot> members = snapshot.data!.docs;
-          if (members.isEmpty) {
-            return Center(
-              child: Text('No family members yet!',
-                style: TextStyle(
-                  fontSize: 24,
-                ),
+      body: Column(
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              width: 150, // Set the desired width for the container
+              child: Column(
+                children: [
+                  FutureBuilder<List<String>>(
+                    future: fetchNationalities(),
+                    builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      }
+                      if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      }
+                      final List<String> nationalities = snapshot.data ?? [];
+                      return DropdownButtonFormField<String>(
+                        value: _selectedNationality,
+                        onChanged: _setSelectedNationality,
+                        items: [
+                          DropdownMenuItem<String>(
+                            value: '',
+                            child: Text('All Nationalities'),
+                          ),
+                          ...nationalities.map((nationality) {
+                            return DropdownMenuItem<String>(
+                              value: nationality,
+                              child: Text(nationality),
+                            );
+                          }).toList(),
+                        ],
+                        decoration: InputDecoration(
+                          hintText: 'Filter by Nationality',
+                        ),
+                        isExpanded: true,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
-            );
-          }
-          return ListView.builder(
-            itemCount: members.length,
-            itemBuilder: (BuildContext context, int index) {
-              final member = members[index];
-              return MemberWidget(
-                name: member['name'],
-                userId: widget.userId,
-                treeId: widget.treeId,
-                memberId: member.id,
-                gender: member['gender'],
-                birthDate: member['birthDate'].toDate(),
-                photoUrl: member['photoUrl'],
-              );
-            },
-          );
-        },
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _membersStream,
+              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                final List<DocumentSnapshot> members = snapshot.data!.docs;
+
+                // Apply filtering based on selected nationality
+                List<DocumentSnapshot> filteredMembers = members;
+                if (_selectedNationality.isNotEmpty) {
+                  filteredMembers = members
+                      .where((member) => member['nationality'] == _selectedNationality)
+                      .toList();
+                }
+
+                if (filteredMembers.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No family members matching the filter',
+                      style: TextStyle(
+                        fontSize: 22,
+                      ),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  itemCount: filteredMembers.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final member = filteredMembers[index];
+                    return MemberWidget(
+                      name: member['name'],
+                      userId: widget.userId,
+                      treeId: widget.treeId,
+                      memberId: member.id,
+                      gender: member['gender'],
+                      birthDate: member['birthDate'].toDate(),
+                      photoUrl: member['photoUrl'],
+                      onDeleteMember: _deleteMember,
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -269,7 +371,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
   DateTime _dateOfBirth = DateTime.now();
   DateTime? _dateOfDeath;
   String _gender = "";
-  String _occupation = "";
+  String _nationality = "";
 
   Future<void> _pickImage() async {
     final pickedImage = await _imagePicker.pickImage(source: ImageSource.gallery);
@@ -290,7 +392,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
       }
       widget.onSubmit(
         _name,
-        _occupation,
+        _nationality,
         _dateOfBirth,
         _gender,
         xFile,
@@ -389,16 +491,16 @@ class _AddMemberFormState extends State<AddMemberForm> {
               SizedBox(height: 16),
               TextFormField(
                 decoration: InputDecoration(
-                  labelText: 'Occupation',
+                  labelText: 'Nationality',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter an occupation';
+                    return 'Please enter a nationality';
                   }
                   return null;
                 },
-                onSaved: (value) => _occupation = value!,
+                onSaved: (value) => _nationality = value!,
               ),
               SizedBox(height: 32),
               ElevatedButton(
