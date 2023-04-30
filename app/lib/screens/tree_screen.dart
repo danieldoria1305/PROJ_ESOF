@@ -1,5 +1,7 @@
 import 'dart:ui';
-
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:GenealogyGuru/screens/edit_member_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +16,7 @@ class MemberWidget extends StatelessWidget {
   final String memberId;
   final DateTime birthDate;
   final String gender;
-  final String photoUrl;
+  final String? photoUrl;
 
   MemberWidget({
     required this.name,
@@ -34,7 +36,20 @@ class MemberWidget extends StatelessWidget {
           .collection('trees')
           .doc(treeId)
           .collection('members');
+
+      // Fetch the member document to get the photo URL
+      final memberDoc = await membersCollection.doc(memberId).get();
+      final memberData = memberDoc.data();
+      final photoUrl = memberData?['photoUrl'] as String?;
+
+      // Delete the member document
       await membersCollection.doc(memberId).delete();
+
+      // Delete the member's photo from Firebase Storage
+      if (photoUrl != null) {
+        final storageRef = FirebaseStorage.instance.refFromURL(photoUrl);
+        await storageRef.delete();
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -86,7 +101,7 @@ class MemberWidget extends StatelessWidget {
         ),
         child: ListTile(
           leading: CircleAvatar(
-            backgroundImage: NetworkImage(photoUrl),
+            backgroundImage: photoUrl != null ? NetworkImage(photoUrl!) : null,
           ),
           title: Text(
             name,
@@ -149,7 +164,7 @@ class _TreeScreenState extends State<TreeScreen> {
         .snapshots();
   }
 
-  void addFamilyMember(String name, String occupation, String? photoUrl, DateTime birthDate, String gender) async {
+  void addFamilyMember(String name, String occupation, DateTime birthDate, String gender, XFile? photo) async {
     final uid = widget.userId;
     final membersCollection = _db
         .collection('users')
@@ -157,11 +172,23 @@ class _TreeScreenState extends State<TreeScreen> {
         .collection('trees')
         .doc(widget.treeId)
         .collection('members');
+
+    String? uploadedPhotoUrl;
+    if (photo != null) {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('members')
+          .child('$uid-${DateTime.now().millisecondsSinceEpoch}');
+      final uploadTask = storageRef.putFile(File(photo.path));
+      final snapshot = await uploadTask.whenComplete(() {});
+      uploadedPhotoUrl = await snapshot.ref.getDownloadURL();
+    }
+
     await membersCollection.doc().set({
       'name': name,
       'gender': gender,
       'occupation': occupation,
-      'photoUrl': photoUrl,
+      'photoUrl': uploadedPhotoUrl,
       'birthDate': birthDate,
     });
   }
@@ -202,6 +229,7 @@ class _TreeScreenState extends State<TreeScreen> {
                 memberId: member.id,
                 gender: member['gender'],
                 birthDate: member['birthDate'].toDate(),
+                photoUrl: member['photoUrl'],
               );
             },
           );
@@ -225,7 +253,7 @@ class _TreeScreenState extends State<TreeScreen> {
 }
 
 class AddMemberForm extends StatefulWidget {
-  final Function(String, String, String?, DateTime, String) onSubmit;
+  final Function(String, String, DateTime, String, XFile?) onSubmit;
 
   AddMemberForm({required this.onSubmit});
 
@@ -235,28 +263,43 @@ class AddMemberForm extends StatefulWidget {
 
 class _AddMemberFormState extends State<AddMemberForm> {
   final _formKey = GlobalKey<FormState>();
-
-  String? _photo;
+  File? _selectedPhoto;
+  final ImagePicker _imagePicker = ImagePicker();
   String _name = "";
   DateTime _dateOfBirth = DateTime.now();
   DateTime? _dateOfDeath;
   String _gender = "";
   String _occupation = "";
 
+  Future<void> _pickImage() async {
+    final pickedImage = await _imagePicker.pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      setState(() {
+        _selectedPhoto = File(pickedImage.path);
+      });
+    }
+  }
+
+
   void _submitForm() {
     if (_formKey.currentState != null && _formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+      XFile? xFile;
+      if (_selectedPhoto != null) {
+        xFile = XFile(_selectedPhoto!.path);
+      }
       widget.onSubmit(
         _name,
         _occupation,
-        _photo,
         _dateOfBirth,
-        //dateOfDeath: _dateOfDeath,
         _gender,
+        xFile,
       );
       Navigator.of(context).pop();
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -266,6 +309,11 @@ class _AddMemberFormState extends State<AddMemberForm> {
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              ElevatedButton(
+                onPressed: _pickImage,
+                child: Text('Choose Photo'),
+              ),
+              SizedBox(height: 16),
               TextFormField(
                 decoration: InputDecoration(
                   labelText: 'Name',
