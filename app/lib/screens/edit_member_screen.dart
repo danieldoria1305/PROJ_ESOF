@@ -27,7 +27,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
   String? _name;
   DateTime _birthDate = DateTime.now();
   String? _gender;
-  String? _occupation;
+  String? _nationality;
 
   @override
   void initState() {
@@ -51,7 +51,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
           _name = memberDoc['name'];
           _birthDate = memberDoc['birthDate'].toDate();
           _gender = memberDoc['gender'];
-          _occupation = memberDoc['occupation'];
+          _nationality = memberDoc['nationality'];
         });
       }
     } catch (e) {
@@ -74,7 +74,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
           'name': _name,
           'birthDate': _birthDate,
           'gender': _gender,
-          'occupation': _occupation,
+          'nationality': _nationality,
         });
 
         Navigator.of(context).pop();
@@ -174,21 +174,21 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
               ),
               SizedBox(height: 16.0),
               TextFormField(
-                initialValue: _occupation,
+                initialValue: _nationality,
                 decoration: InputDecoration(
-                  labelText: 'Occupation',
+                  labelText: 'Nationality',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter an occupation';
+                    return 'Please enter an nationality';
                   }
                   return null;
                 },
-                onSaved: (value) => _occupation = value ?? '',
+                onSaved: (value) => _nationality = value ?? '',
                 onChanged: (value) {
                   setState(() {
-                    _occupation = value;
+                    _nationality = value;
                   });
                 },
               ),

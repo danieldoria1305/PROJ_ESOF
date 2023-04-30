@@ -164,7 +164,7 @@ class _TreeScreenState extends State<TreeScreen> {
         .snapshots();
   }
 
-  void addFamilyMember(String name, String occupation, DateTime birthDate, String gender, XFile? photo) async {
+  void addFamilyMember(String name, String nationality, DateTime birthDate, String gender, XFile? photo) async {
     final uid = widget.userId;
     final membersCollection = _db
         .collection('users')
@@ -187,7 +187,7 @@ class _TreeScreenState extends State<TreeScreen> {
     await membersCollection.doc().set({
       'name': name,
       'gender': gender,
-      'occupation': occupation,
+      'nationality': nationality,
       'photoUrl': uploadedPhotoUrl,
       'birthDate': birthDate,
     });
@@ -269,7 +269,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
   DateTime _dateOfBirth = DateTime.now();
   DateTime? _dateOfDeath;
   String _gender = "";
-  String _occupation = "";
+  String _nationality = "";
 
   Future<void> _pickImage() async {
     final pickedImage = await _imagePicker.pickImage(source: ImageSource.gallery);
@@ -290,7 +290,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
       }
       widget.onSubmit(
         _name,
-        _occupation,
+        _nationality,
         _dateOfBirth,
         _gender,
         xFile,
@@ -389,16 +389,16 @@ class _AddMemberFormState extends State<AddMemberForm> {
               SizedBox(height: 16),
               TextFormField(
                 decoration: InputDecoration(
-                  labelText: 'Occupation',
+                  labelText: 'Nationality',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter an occupation';
+                    return 'Please enter a nationality';
                   }
                   return null;
                 },
-                onSaved: (value) => _occupation = value!,
+                onSaved: (value) => _nationality = value!,
               ),
               SizedBox(height: 32),
               ElevatedButton(
