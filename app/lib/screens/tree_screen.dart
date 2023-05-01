@@ -10,7 +10,8 @@ import 'package:intl/intl.dart';
 final _db = FirebaseFirestore.instance;
 
 class MemberWidget extends StatelessWidget {
-  final String name;
+  final String firstName;
+  final String lastName;
   final String userId;
   final String treeId;
   final String memberId;
@@ -20,7 +21,8 @@ class MemberWidget extends StatelessWidget {
   final void Function(String) onDeleteMember;
 
   MemberWidget({
-    required this.name,
+    required this.firstName,
+    required this.lastName,
     required this.userId,
     required this.treeId,
     required this.memberId,
@@ -75,7 +77,7 @@ class MemberWidget extends StatelessWidget {
             backgroundImage: photoUrl != null ? NetworkImage(photoUrl!) : null,
           ),
           title: Text(
-            name,
+            firstName + ' ' + lastName,
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Column(
@@ -98,7 +100,8 @@ class MemberWidget extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => EditMemberScreen(memberId: memberId, userId: userId, treeId: treeId)),
+                    builder: (context) => EditMemberScreen(
+                        memberId: memberId, userId: userId, treeId: treeId)),
               );
             },
             icon: Icon(Icons.edit),
@@ -114,7 +117,12 @@ class TreeScreen extends StatefulWidget {
   final treeId;
   final userId;
 
-  TreeScreen({Key? key, required this.treeName, required this.userId, required this.treeId}) : super(key: key);
+  TreeScreen(
+      {Key? key,
+      required this.treeName,
+      required this.userId,
+      required this.treeId})
+      : super(key: key);
 
   @override
   _TreeScreenState createState() => _TreeScreenState();
@@ -124,6 +132,7 @@ class _TreeScreenState extends State<TreeScreen> {
   late Stream<QuerySnapshot> _membersStream;
   String _selectedNationality = '';
   String _selectedGender = '';
+  String _selectedLastName = '';
 
   @override
   void initState() {
@@ -134,7 +143,10 @@ class _TreeScreenState extends State<TreeScreen> {
         .collection('trees')
         .doc(widget.treeId)
         .collection('members')
-        .where('gender', isEqualTo: _selectedGender.isNotEmpty ? _selectedGender : null)
+        .where('gender',
+            isEqualTo: _selectedGender.isNotEmpty ? _selectedGender : null)
+        .where('lastName',
+            isEqualTo: _selectedLastName.isNotEmpty ? _selectedLastName : null)
         .snapshots();
   }
 
@@ -144,7 +156,14 @@ class _TreeScreenState extends State<TreeScreen> {
     });
   }
 
-  void addFamilyMember(String name, String nationality, DateTime birthDate, String gender, XFile? photo) async {
+  void _setSelectedLastName(String? lastName) {
+    setState(() {
+      _selectedLastName = lastName!;
+    });
+  }
+
+  void addFamilyMember(String firstName, String lastName, String nationality,
+      DateTime birthDate, String gender, XFile? photo) async {
     final uid = widget.userId;
     final membersCollection = _db
         .collection('users')
@@ -165,7 +184,8 @@ class _TreeScreenState extends State<TreeScreen> {
     }
 
     await membersCollection.doc().set({
-      'name': name,
+      'firstName': firstName,
+      'lastName': lastName,
       'gender': gender,
       'nationality': nationality,
       'photoUrl': uploadedPhotoUrl,
@@ -236,6 +256,33 @@ class _TreeScreenState extends State<TreeScreen> {
     }
   }
 
+  Future<List<String>> fetchLastNames() async {
+    try {
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userId)
+          .collection('trees')
+          .doc(widget.treeId)
+          .collection('members')
+          .get();
+      final List<QueryDocumentSnapshot> documents = snapshot.docs;
+
+      // Extract unique nationalities from documents
+      final Set<String> uniqueLastNames = Set<String>();
+      for (var doc in documents) {
+        final lastName = doc['lastName'];
+        if (lastName != null && lastName is String) {
+          uniqueLastNames.add(lastName);
+        }
+      }
+
+      return uniqueLastNames.toList();
+    } catch (e) {
+      print('Error fetching last names: $e');
+      return [];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -243,152 +290,205 @@ class _TreeScreenState extends State<TreeScreen> {
         title: Text(widget.treeName),
       ),
       body: Column(
+
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Container(
-                width: 150,
-                child: Column(
-                  children: [
-                    DropdownButtonFormField<String>(
-                      value: _selectedGender,
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedGender = value!;
-                          _membersStream = FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(widget.userId)
-                              .collection('trees')
-                              .doc(widget.treeId)
-                              .collection('members')
-                              .where('gender', isEqualTo: _selectedGender.isNotEmpty ? _selectedGender : null)
-                              .snapshots();
-                        });
-                      },
-                      items: [
-                        DropdownMenuItem<String>(
-                          value: '',
-                          child: Text('All Genders'),
-                        ),
-                        DropdownMenuItem<String>(
-                          value: 'Male',
-                          child: Text('Male'),
-                        ),
-                        DropdownMenuItem<String>(
-                          value: 'Female',
-                          child: Text('Female'),
-                        ),
-                        DropdownMenuItem<String>(
-                          value: 'Non-binary',
-                          child: Text('Non-binary'),
-                        ),
-                        DropdownMenuItem<String>(
-                          value: 'Other',
-                          child: Text('Other'),
-                        ),
-                      ],
-                      decoration: InputDecoration(
-                        hintText: 'Filter by Gender',
-                      ),
-                      isExpanded: true,
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-              Container(
-                width: 150,
-                child: Column(
-                  children: [
-                    FutureBuilder<List<String>>(
-                      future: fetchNationalities(),
-                      builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return CircularProgressIndicator();
-                        }
-                        if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}');
-                        }
-                        final List<String> nationalities = snapshot.data ?? [];
-                        return DropdownButtonFormField<String>(
-                          value: _selectedNationality,
-                          onChanged: _setSelectedNationality,
-                          items: [
-                            DropdownMenuItem<String>(
-                              value: '',
-                              child: Text('All Nationalities'),
-                            ),
-                            ...nationalities.map((nationality) {
-                              return DropdownMenuItem<String>(
-                                value: nationality,
-                                child: Text(nationality),
-                              );
-                            }).toList(),
-                          ],
-                          decoration: InputDecoration(
-                            hintText: 'Filter by Nationality',
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                Container(
+                  width: 106,
+                  child: Column(
+                    children: [
+                      DropdownButtonFormField<String>(
+                        value: _selectedGender,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedGender = value!;
+                            _membersStream = FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(widget.userId)
+                                .collection('trees')
+                                .doc(widget.treeId)
+                                .collection('members')
+                                .where('gender',
+                                    isEqualTo: _selectedGender.isNotEmpty
+                                        ? _selectedGender
+                                        : null)
+                                .snapshots();
+                          });
+                        },
+                        items: [
+                          DropdownMenuItem<String>(
+                            value: '',
+                            child: Text('All Genders'),
                           ),
-                          isExpanded: true,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: _membersStream,
-              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
-                if (!snapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                final List<DocumentSnapshot> members = snapshot.data!.docs;
-
-                List<DocumentSnapshot> filteredMembers = members;
-                if (_selectedNationality.isNotEmpty) {
-                  filteredMembers = members
-                      .where((member) => member['nationality'] == _selectedNationality)
-                      .toList();
-                }
-
-                if (filteredMembers.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No family members matching the filters',
-                      style: TextStyle(
-                        fontSize: 22,
+                          DropdownMenuItem<String>(
+                            value: 'Male',
+                            child: Text('Male'),
+                          ),
+                          DropdownMenuItem<String>(
+                            value: 'Female',
+                            child: Text('Female'),
+                          ),
+                          DropdownMenuItem<String>(
+                            value: 'Non-binary',
+                            child: Text('Non-binary'),
+                          ),
+                          DropdownMenuItem<String>(
+                            value: 'Other',
+                            child: Text('Other'),
+                          ),
+                        ],
+                        decoration: InputDecoration(
+                          hintText: 'Filter by Gender',
+                        ),
+                        isExpanded: true,
                       ),
-                    ),
-                  );
-                }
-                return ListView.builder(
-                  itemCount: filteredMembers.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final member = filteredMembers[index];
-                    return MemberWidget(
-                      name: member['name'],
-                      userId: widget.userId,
-                      treeId: widget.treeId,
-                      memberId: member.id,
-                      gender: member['gender'],
-                      birthDate: member['birthDate'].toDate(),
-                      photoUrl: member['photoUrl'],
-                      onDeleteMember: _deleteMember,
-                    );
-                  },
-                );
-              },
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 100,
+                  child: Column(
+                    children: [
+                      FutureBuilder<List<String>>(
+                        future: fetchLastNames(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<List<String>> snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          }
+                          if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          }
+                          final List<String> lastNames = snapshot.data ?? [];
+                          return DropdownButtonFormField<String>(
+                            value: _selectedLastName,
+                            onChanged: _setSelectedLastName,
+                            items: [
+                              DropdownMenuItem<String>(
+                                value: '',
+                                child: Text('All Names'),
+                              ),
+                              ...lastNames.map((lastName) {
+                                return DropdownMenuItem<String>(
+                                  value: lastName,
+                                  child: Text(lastName),
+                                );
+                              }).toList(),
+                            ],
+                            decoration: InputDecoration(
+                              hintText: 'Filter by Nationality',
+                            ),
+                            isExpanded: true,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                      Container(
+                        width: 137,
+                        child: Column(
+                          children: [
+                            FutureBuilder<List<String>>(
+                              future: fetchNationalities(),
+                              builder: (BuildContext context,
+                                  AsyncSnapshot<List<String>> snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return CircularProgressIndicator();
+                                }
+                                if (snapshot.hasError) {
+                                  return Text('Error: ${snapshot.error}');
+                                }
+                                final List<String> nationalities =
+                                    snapshot.data ?? [];
+                                return DropdownButtonFormField<String>(
+                                  value: _selectedNationality,
+                                  onChanged: _setSelectedNationality,
+                                  items: [
+                                    DropdownMenuItem<String>(
+                                      value: '',
+                                      child: Text('All Nationalities'),
+                                    ),
+                                    ...nationalities.map((nationality) {
+                                      return DropdownMenuItem<String>(
+                                        value: nationality,
+                                        child: Text(nationality),
+                                      );
+                                    }).toList(),
+                                  ],
+                                  decoration: InputDecoration(
+                                    hintText: 'Filter by Nationality',
+                                  ),
+                                  isExpanded: true,
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: _membersStream,
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      }
+                      if (!snapshot.hasData) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      final List<DocumentSnapshot> members = snapshot.data!.docs;
+
+                      List<DocumentSnapshot> filteredMembers = members;
+                      if (_selectedNationality.isNotEmpty) {
+                        filteredMembers = members
+                            .where((member) =>
+                                member['nationality'] == _selectedNationality)
+                            .toList();
+                      }
+
+                      if (filteredMembers.isEmpty) {
+                        return Center(
+                          child: Text(
+                            'No family members matching the filters',
+                            style: TextStyle(
+                              fontSize: 22,
+                            ),
+                          ),
+                        );
+                      }
+                      return ListView.builder(
+                        itemCount: filteredMembers.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final member = filteredMembers[index];
+                          return MemberWidget(
+                            firstName: member['firstName'],
+                            lastName: member['lastName'],
+                            userId: widget.userId,
+                            treeId: widget.treeId,
+                            memberId: member.id,
+                            gender: member['gender'],
+                            birthDate: member['birthDate'].toDate(),
+                            photoUrl: member['photoUrl'],
+                            onDeleteMember: _deleteMember,
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showDialog(
@@ -407,7 +507,7 @@ class _TreeScreenState extends State<TreeScreen> {
 }
 
 class AddMemberForm extends StatefulWidget {
-  final Function(String, String, DateTime, String, XFile?) onSubmit;
+  final Function(String, String, String, DateTime, String, XFile?) onSubmit;
 
   AddMemberForm({required this.onSubmit});
 
@@ -419,21 +519,22 @@ class _AddMemberFormState extends State<AddMemberForm> {
   final _formKey = GlobalKey<FormState>();
   File? _selectedPhoto;
   final ImagePicker _imagePicker = ImagePicker();
-  String _name = "";
+  String _firstName = "";
+  String _lastName = "";
   DateTime _dateOfBirth = DateTime.now();
   DateTime? _dateOfDeath;
   String _gender = "";
   String _nationality = "";
 
   Future<void> _pickImage() async {
-    final pickedImage = await _imagePicker.pickImage(source: ImageSource.gallery);
+    final pickedImage =
+        await _imagePicker.pickImage(source: ImageSource.gallery);
     if (pickedImage != null) {
       setState(() {
         _selectedPhoto = File(pickedImage.path);
       });
     }
   }
-
 
   void _submitForm() {
     if (_formKey.currentState != null && _formKey.currentState!.validate()) {
@@ -443,7 +544,8 @@ class _AddMemberFormState extends State<AddMemberForm> {
         xFile = XFile(_selectedPhoto!.path);
       }
       widget.onSubmit(
-        _name,
+        _firstName,
+        _lastName,
         _nationality,
         _dateOfBirth,
         _gender,
@@ -453,123 +555,131 @@ class _AddMemberFormState extends State<AddMemberForm> {
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ElevatedButton(
-                onPressed: _pickImage,
-                child: Text('Choose Photo'),
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a name';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _name = value!,
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: 'Date of Birth',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a date of birth';
-                  }
-                  return null;
-                },
-                onTap: () async {
-                  final DateTime? date = await showDatePicker(
-                    context: context,
-                    initialDate: _dateOfBirth,
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                  );
-                  if (date != null) {
-                    setState(() {
-                      _dateOfBirth = date;
-                    });
-                  }
-                },
-                readOnly: true,
-                controller: TextEditingController(
-                  text: DateFormat.yMMMMd().format(_dateOfBirth),
-                ),
-              ),
-              SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  labelText: 'Gender',
-                  border: OutlineInputBorder(),
-                ),
-                items: [
-                  'Male',
-                  'Female',
-                  'Non-binary',
-                  'Other',
-                ]
-                    .map(
-                      (gender) =>
-                      DropdownMenuItem<String>(
-                        value: gender,
-                        child: Text(gender),
-                      ),
-                )
-                    .toList(),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please select a gender';
-                  }
-                  return null;
-                },
-                onChanged: (value) => setState(() => _gender = value!),
-                value: _gender.isNotEmpty == true ? _gender : null,
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                decoration: InputDecoration(
-                  labelText: 'Nationality',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a nationality';
-                  }
-                  return null;
-                },
-                onSaved: (value) => _nationality = value!,
-              ),
-              SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _submitForm,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 48),
-                ),
-                child: Text(
-                  'Add Member',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          ElevatedButton(
+            onPressed: _pickImage,
+            child: Text('Choose Photo'),
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'First Name',
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a first name';
+              }
+              return null;
+            },
+            onSaved: (value) => _firstName = value!,
+          ),
+          SizedBox(height: 16.0),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Last Name',
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a last name';
+              }
+              return null;
+            },
+            onSaved: (value) => _lastName = value!,
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Date of Birth',
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a date of birth';
+              }
+              return null;
+            },
+            onTap: () async {
+              final DateTime? date = await showDatePicker(
+                context: context,
+                initialDate: _dateOfBirth,
+                firstDate: DateTime(1900),
+                lastDate: DateTime.now(),
+              );
+              if (date != null) {
+                setState(() {
+                  _dateOfBirth = date;
+                });
+              }
+            },
+            readOnly: true,
+            controller: TextEditingController(
+              text: DateFormat.yMMMMd().format(_dateOfBirth),
+            ),
+          ),
+          SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              labelText: 'Gender',
+              border: OutlineInputBorder(),
+            ),
+            items: [
+              'Male',
+              'Female',
+              'Non-binary',
+              'Other',
             ]
-        ),
+                .map(
+                  (gender) => DropdownMenuItem<String>(
+                    value: gender,
+                    child: Text(gender),
+                  ),
+                )
+                .toList(),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please select a gender';
+              }
+              return null;
+            },
+            onChanged: (value) => setState(() => _gender = value!),
+            value: _gender.isNotEmpty == true ? _gender : null,
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Nationality',
+              border: OutlineInputBorder(),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a nationality';
+              }
+              return null;
+            },
+            onSaved: (value) => _nationality = value!,
+          ),
+          SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: _submitForm,
+            style: ElevatedButton.styleFrom(
+              minimumSize: Size(double.infinity, 48),
+            ),
+            child: Text(
+              'Add Member',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ]),
       ),
     );
   }

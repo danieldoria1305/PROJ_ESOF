@@ -24,7 +24,8 @@ class EditMemberScreen extends StatefulWidget {
 class _EditMemberScreenState extends State<EditMemberScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  String? _name;
+  String? _firstName;
+  String? _lastName;
   DateTime _birthDate = DateTime.now();
   String? _gender;
   String? _nationality;
@@ -48,7 +49,8 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
 
       if (memberDoc.exists) {
         setState(() {
-          _name = memberDoc['name'];
+          _firstName = memberDoc['firstName'];
+          _lastName = memberDoc['lastName'];
           _birthDate = memberDoc['birthDate'].toDate();
           _gender = memberDoc['gender'];
           _nationality = memberDoc['nationality'];
@@ -71,7 +73,8 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
             .doc(widget.memberId);
 
         await memberRef.update({
-          'name': _name,
+          'firstName': _firstName,
+          'lastName': _lastName,
           'birthDate': _birthDate,
           'gender': _gender,
           'nationality': _nationality,
@@ -99,21 +102,41 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextFormField(
-                initialValue: _name,
+                initialValue: _firstName,
                 decoration: InputDecoration(
-                  labelText: 'Name',
+                  labelText: 'First Name',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter a name';
+                    return 'Please enter a first name';
                   }
                   return null;
                 },
-                onSaved: (value) => _name = value ?? '',
+                onSaved: (value) => _firstName = value ?? '',
                 onChanged: (value) {
                   setState(() {
-                    _name = value;
+                    _firstName = value;
+                  });
+                },
+              ),
+              SizedBox(height: 16.0),
+              TextFormField(
+                initialValue: _lastName,
+                decoration: InputDecoration(
+                  labelText: 'Last Name',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a last name';
+                  }
+                  return null;
+                },
+                onSaved: (value) => _lastName = value ?? '',
+                onChanged: (value) {
+                  setState(() {
+                    _lastName = value;
                   });
                 },
               ),
@@ -181,7 +204,7 @@ class _EditMemberScreenState extends State<EditMemberScreen> {
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter an nationality';
+                    return 'Please enter a nationality';
                   }
                   return null;
                 },
