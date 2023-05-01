@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'dart:io';
+import 'package:GenealogyGuru/screens/tree_statistics_screen.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:GenealogyGuru/screens/edit_member_screen.dart';
@@ -156,12 +157,6 @@ class _TreeScreenState extends State<TreeScreen> {
     });
   }
 
-  void _setSelectedLastName(String? lastName) {
-    setState(() {
-      _selectedLastName = lastName!;
-    });
-  }
-
   void addFamilyMember(String firstName, String lastName, String nationality,
       DateTime birthDate, String gender, XFile? photo) async {
     final uid = widget.userId;
@@ -203,7 +198,6 @@ class _TreeScreenState extends State<TreeScreen> {
           .doc(widget.treeId)
           .collection('members');
 
-      // Fetch the member document to get the photo URL
       final memberDoc = await membersCollection.doc(memberId).get();
       final memberData = memberDoc.data();
       final photoUrl = memberData?['photoUrl'] as String?;
@@ -240,7 +234,6 @@ class _TreeScreenState extends State<TreeScreen> {
           .get();
       final List<QueryDocumentSnapshot> documents = snapshot.docs;
 
-      // Extract unique nationalities from documents
       final Set<String> uniqueNationalities = Set<String>();
       for (var doc in documents) {
         final nationality = doc['nationality'];
@@ -267,7 +260,6 @@ class _TreeScreenState extends State<TreeScreen> {
           .get();
       final List<QueryDocumentSnapshot> documents = snapshot.docs;
 
-      // Extract unique nationalities from documents
       final Set<String> uniqueLastNames = Set<String>();
       for (var doc in documents) {
         final lastName = doc['lastName'];
@@ -288,9 +280,24 @@ class _TreeScreenState extends State<TreeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.treeName),
+        actions: [
+          IconButton(
+            tooltip: 'Tree Statistics',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => TreeStatisticsScreen(
+                    treeId: widget.treeId,
+                    userId: widget.userId,
+                  ),
+                ),
+              );
+            },
+            icon: Icon(Icons.bar_chart),
+          ),
+        ],
       ),
       body: Column(
-
         children: [
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -312,9 +319,13 @@ class _TreeScreenState extends State<TreeScreen> {
                                 .doc(widget.treeId)
                                 .collection('members')
                                 .where('gender',
-                                    isEqualTo: _selectedGender.isNotEmpty
-                                        ? _selectedGender
-                                        : null)
+                                isEqualTo: _selectedGender.isNotEmpty
+                                    ? _selectedGender
+                                    : null)
+                                .where('lastName',
+                                isEqualTo: _selectedLastName.isNotEmpty
+                                    ? _selectedLastName
+                                    : null)
                                 .snapshots();
                           });
                         },
@@ -367,7 +378,26 @@ class _TreeScreenState extends State<TreeScreen> {
                           final List<String> lastNames = snapshot.data ?? [];
                           return DropdownButtonFormField<String>(
                             value: _selectedLastName,
-                            onChanged: _setSelectedLastName,
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedLastName = value!;
+                                _membersStream = FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(widget.userId)
+                                    .collection('trees')
+                                    .doc(widget.treeId)
+                                    .collection('members')
+                                    .where('gender',
+                                    isEqualTo: _selectedGender.isNotEmpty
+                                        ? _selectedGender
+                                        : null)
+                                    .where('lastName',
+                                    isEqualTo: _selectedLastName.isNotEmpty
+                                        ? _selectedLastName
+                                        : null)
+                                    .snapshots();
+                              });
+                            },
                             items: [
                               DropdownMenuItem<String>(
                                 value: '',
