@@ -32,6 +32,7 @@ class _ProfileIcon extends StatelessWidget {
             child: Text('Settings'),
           ),
           PopupMenuItem<Menu>(
+            key: Key("SignOutButton"),
             onTap: () async {
               FirebaseAuth.instance.signOut();
             },
@@ -154,8 +155,9 @@ class TreeWidget extends StatelessWidget {
 class HomeScreen extends StatefulWidget {
   final user = FirebaseAuth.instance.currentUser;
   final String title;
+  Key key = Key('HomeScreen');
 
-  HomeScreen({super.key, required this.title});
+  HomeScreen({required this.title});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -197,7 +199,9 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(child: _ProfileIcon()),
+            child: CircleAvatar(
+                child: _ProfileIcon(key: Key("ProfileIcon"),)
+            ),
           )
         ],
       ),

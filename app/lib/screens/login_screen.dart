@@ -4,8 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback showRegisterScreen;
+  final Key key = Key("LoginScreen");
 
-  const LoginScreen({Key? key, required this.showRegisterScreen}) : super(key: key);
+  LoginScreen({required this.showRegisterScreen});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -90,6 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: TextField(
+                      key: Key('EmailField'),
                       controller: _emailController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
@@ -110,6 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0),
                   child: TextField(
+                    key: Key('PasswordField'),
                     controller: _passwordController,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
@@ -131,6 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0),
                   child: GestureDetector(
+                    key: Key('SignInButton'),
                     onTap: signIn,
                     child: Container(
                       padding: EdgeInsets.all(20),
@@ -160,6 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontWeight: FontWeight.bold,
                       ),),
                     GestureDetector(
+                      key: Key('RegisterNowButton'),
                       onTap: widget.showRegisterScreen,
                       child: Text(" Register now",
                         style: TextStyle(
