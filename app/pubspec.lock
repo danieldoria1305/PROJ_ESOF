@@ -231,7 +231,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_driver:
-    dependency: transitive
+    dependency: "direct dev"
     description: flutter
     source: sdk
     version: "0.0.0"
@@ -298,6 +298,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.8"
+  glob:
+    dependency: "direct main"
+    description:
+      name: glob
+      sha256: "4515b5b6ddb505ebdd242a5f2cc5d22d3d6a80013789debfbda7777f47ea308c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.1"
   google_fonts:
     dependency: "direct main"
     description:
