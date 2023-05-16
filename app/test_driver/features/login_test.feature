@@ -11,12 +11,12 @@ Feature: Register, Login and Sign out
     Given I have "EmailField" and "PasswordField" and "SignInButton"
     When I fill the "EmailField" field with "test@gmail.com"
     And I fill the "PasswordField" field with "test1234"
-    Then I tap the "SignInButton" button
+    Then I tap the "SignInButton" widget
     Then I have "HomeScreen" on screen
 
     Scenario: when user is logged in and clicks on sign out
       Given I have "ProfileIcon" on screen
-      When I tap the "ProfileIcon" button
+      When I tap the "ProfileIcon" icon
       Given I have "SignOutButton" on screen
-      When I tap the "SignOutButton" button
+      When I tap the "SignOutButton" text
       Then I have "LoginScreen" on screen

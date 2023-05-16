@@ -37,6 +37,7 @@ class CheckGivenWidgets
   RegExp get pattern => RegExp(r"I have {string} and {string} and {string}");
 }
 
+/*
 class ClickButton extends Then1WithWorld<String, FlutterWorld> {
   @override
   Future<void> executeStep(String btn) async {
@@ -46,7 +47,7 @@ class ClickButton extends Then1WithWorld<String, FlutterWorld> {
   }
   @override
   RegExp get pattern => RegExp(r"I tap the {string} button");
-}
+} */
 /*
 class ClickRegisterLink extends Then1WithWorld<String, FlutterWorld> {
   @override
