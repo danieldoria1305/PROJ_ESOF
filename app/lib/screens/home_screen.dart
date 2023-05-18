@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import 'account_screen.dart';
+
 final List<String> _menuItems = <String>[
   'About',
   'Contact',
@@ -14,7 +16,8 @@ final FirebaseFirestore _db = FirebaseFirestore.instance;
 enum Menu { itemOne, itemTwo, itemThree }
 
 class _ProfileIcon extends StatelessWidget {
-  const _ProfileIcon({Key? key}) : super(key: key);
+  final String userId;
+  const _ProfileIcon({Key? key, required this.userId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +26,18 @@ class _ProfileIcon extends StatelessWidget {
         offset: const Offset(0, 40),
         onSelected: (Menu item) {},
         itemBuilder: (BuildContext context) => <PopupMenuEntry<Menu>>[
-          const PopupMenuItem<Menu>(
+          PopupMenuItem<Menu>(
             value: Menu.itemOne,
-            child: Text('Account'),
+            child: GestureDetector(
+                key: Key("AccountButton"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AccountScreen(userId: userId)),
+                  );
+                },
+                child: Text('Account')
+            ),
           ),
           const PopupMenuItem<Menu>(
             value: Menu.itemTwo,
@@ -196,11 +208,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        actions: const [
+        actions: [
           Padding(
             padding: EdgeInsets.only(right: 16.0),
             child: CircleAvatar(
-                child: _ProfileIcon(key: Key("ProfileIcon"),)
+                child: _ProfileIcon(
+                  key: Key("ProfileIcon"),
+                  userId: widget.user!.uid,
+                )
             ),
           )
         ],
