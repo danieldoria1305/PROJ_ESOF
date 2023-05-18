@@ -14,7 +14,7 @@ Future<void> main() {
       TestRunSummaryReporter(),
       JsonReporter(path: './report.json')
     ]
-    ..stepDefinitions = [CheckGivenWidgets(), CheckThenWidget(), ClickButton()]
+    ..stepDefinitions = [CheckGivenWidgets(), CheckThenWidget()]
     ..restartAppBetweenScenarios = true
     ..targetAppPath = "test_driver/app.dart";
   return GherkinRunner().execute(config);

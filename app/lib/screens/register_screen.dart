@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 class RegisterScreen extends StatefulWidget {
   final VoidCallback showLoginScreen;
-  const RegisterScreen({Key? key, required this.showLoginScreen})
-      : super(key: key);
+  final Key key = Key("RegisterScreen");
+  RegisterScreen({required this.showLoginScreen});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -127,6 +127,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 25.0),
                           child: TextField(
+                            key: Key("FirstNameField"),
                             controller: _firstNameController,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
@@ -148,6 +149,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 25.0),
                           child: TextField(
+                            key: Key("LastNameField"),
                             controller: _lastNameController,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
@@ -171,6 +173,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: TextField(
+                      key: Key("AgeField"),
                       controller: _ageController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
@@ -190,6 +193,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: TextField(
+                      key: Key("EmailField"),
                       controller: _emailController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
@@ -209,6 +213,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: TextField(
+                      key: Key("PasswordField"),
                       controller: _passwordController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
@@ -229,6 +234,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25.0),
                     child: TextField(
+                      key: Key("ConfirmPasswordField"),
                       controller: _confirmPasswordController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
@@ -249,6 +255,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 25.0),
                   child: GestureDetector(
+                    key: Key("SignUpButton"),
                     onTap: signUp,
                     child: Container(
                       padding: EdgeInsets.all(20),

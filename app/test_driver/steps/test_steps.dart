@@ -36,27 +36,3 @@ class CheckGivenWidgets
 // TODO: implement pattern
   RegExp get pattern => RegExp(r"I have {string} and {string} and {string}");
 }
-
-class ClickButton extends Then1WithWorld<String, FlutterWorld> {
-  @override
-  Future<void> executeStep(String btn) async {
-// TODO: implement executeStep
-    final finder = find.byValueKey(btn);
-    await FlutterDriverUtils.tap(world.driver, finder);
-  }
-  @override
-  RegExp get pattern => RegExp(r"I tap the {string} button");
-}
-/*
-class ClickRegisterLink extends Then1WithWorld<String, FlutterWorld> {
-  @override
-  Future<void> executeStep(String registerlink) async {
-    final registerfinder = find.byValueKey(registerlink);
-    await FlutterDriverUtils.tap(world.driver, registerfinder);
-  }
-
-  @override
-  // TODO: implement pattern
-  Pattern get pattern => RegExp("I tap the {string} link");
-}
-*/
