@@ -91,6 +91,7 @@ class TreeWidget extends StatelessWidget {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
+                key: Key("DeleteTreeDialog"),
                 title: Text('Confirm'),
                 content: Text('Are you sure you want to delete this tree?'),
                 actions: <Widget>[
@@ -99,6 +100,7 @@ class TreeWidget extends StatelessWidget {
                     child: Text('CANCEL'),
                   ),
                   TextButton(
+                    key: Key("DeleteTreeDialogButton"),
                     onPressed: () => Navigator.of(context).pop(true),
                     child: Text('DELETE'),
                   ),
@@ -254,8 +256,9 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
+        key: Key('CreateTreeButton'),
         onPressed: addTree,
-        tooltip: 'Add Tree',
+        tooltip: 'Create New Tree',
         child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -314,7 +317,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void addTree() async {
     final name = await openDialog();
     if (name != null) {
-      // Add the tree to the database
       final uid = widget.user!.uid;
       final treesCollection = _db
           .collection('users')
@@ -327,14 +329,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<String?> openDialog() => showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
+          key: Key('CreateTreeDialog'),
           title: Text('Create new Tree'),
           content: TextField(
+            key: Key('TreeNameField'),
             autofocus: true,
             decoration: InputDecoration(hintText: 'Insert tree name'),
             controller: controller,
           ),
           actions: [
             TextButton(
+              key: Key('CreateTreeDialogButton'),
               child: Text('Create'),
               onPressed: submit,
             )
