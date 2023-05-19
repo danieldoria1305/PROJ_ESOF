@@ -36,3 +36,35 @@ class CheckGivenWidgets
 // TODO: implement pattern
   RegExp get pattern => RegExp(r"I have {string} and {string} and {string}");
 }
+
+class SelectFromDropdown extends When2WithWorld<String, String, FlutterWorld> {
+  @override
+  Future<void> executeStep(String input1, String input2) async {
+    final optioninput = find.text(input1);
+    final dropdowninput = find.byValueKey(input2);
+    bool dropdownExists = await FlutterDriverUtils.isPresent(world.driver, dropdowninput);
+    expect(dropdownExists, true);
+    await FlutterDriverUtils.tap(world.driver, dropdowninput);
+    bool optionExists = await FlutterDriverUtils.isPresent(world.driver, optioninput);
+    expect(optionExists, true);
+    await FlutterDriverUtils.tap(world.driver, optioninput);
+  }
+  @override
+  RegExp get pattern => RegExp(r"I select the option {string} from the {string} dropdown");
+}
+
+class HaveContains2 extends Given2WithWorld<String, String, FlutterWorld> {
+  @override
+  Future<void> executeStep(String input1, String input2) async {
+    final widget = find.byValueKey(input1);
+    final text = find.text(input2);
+    bool widgetExists = await FlutterDriverUtils.isPresent(world.driver, widget);
+    expect(widgetExists, true);
+    bool text1Exists = await FlutterDriverUtils.isPresent(world.driver, text);
+    expect(text1Exists, true);
+  }
+  @override
+  RegExp get pattern => RegExp(r"I have a {string} that contains the text {string}");
+}
+
+

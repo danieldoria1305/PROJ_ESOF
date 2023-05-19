@@ -20,6 +20,8 @@ class MemberWidget extends StatelessWidget {
   final String gender;
   final String? photoUrl;
   final void Function(String) onDeleteMember;
+  final Key key = Key('MemberWidget');
+
 
   MemberWidget({
     required this.firstName,
@@ -37,6 +39,7 @@ class MemberWidget extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        key:Key('DeleteMemberDialog'),
         title: Text('Confirm'),
         content: Text('Are you sure you wish to delete this item?'),
         actions: <Widget>[
@@ -45,6 +48,7 @@ class MemberWidget extends StatelessWidget {
             child: Text('CANCEL'),
           ),
           TextButton(
+            key: Key("DeleteMemberDialogButton"),
             onPressed: () => Navigator.of(context).pop(true),
             child: Text('DELETE'),
           ),
@@ -117,6 +121,7 @@ class TreeScreen extends StatefulWidget {
   final String treeName;
   final treeId;
   final userId;
+  final Key key = Key('TreeScreen');
 
   TreeScreen(
       {Key? key,
@@ -520,6 +525,7 @@ class _TreeScreenState extends State<TreeScreen> {
               ],
             ),
       floatingActionButton: FloatingActionButton(
+        key: Key('AddMemberButton'),
         onPressed: () {
           showDialog(
             context: context,
@@ -537,6 +543,7 @@ class _TreeScreenState extends State<TreeScreen> {
 }
 
 class AddMemberForm extends StatefulWidget {
+  final Key key = Key('AddMemberDialog');
   final Function(String, String, String, DateTime, String, XFile?) onSubmit;
 
   AddMemberForm({required this.onSubmit});
@@ -555,6 +562,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
   DateTime? _dateOfDeath;
   String _gender = "";
   String _nationality = "";
+
 
   Future<void> _pickImage() async {
     final pickedImage =
@@ -597,6 +605,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
           ),
           SizedBox(height: 16),
           TextFormField(
+            key:Key('FirstNameField'),
             decoration: InputDecoration(
               labelText: 'First Name',
               border: OutlineInputBorder(),
@@ -611,6 +620,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
           ),
           SizedBox(height: 16.0),
           TextFormField(
+            key:Key('LastNameField'),
             decoration: InputDecoration(
               labelText: 'Last Name',
               border: OutlineInputBorder(),
@@ -655,6 +665,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
           ),
           SizedBox(height: 16),
           DropdownButtonFormField<String>(
+            key: Key('GenderDropdown'),
             decoration: InputDecoration(
               labelText: 'Gender',
               border: OutlineInputBorder(),
@@ -683,6 +694,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
           ),
           SizedBox(height: 16),
           TextFormField(
+            key:Key('NationalityField'),
             decoration: InputDecoration(
               labelText: 'Nationality',
               border: OutlineInputBorder(),
@@ -697,6 +709,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
           ),
           SizedBox(height: 32),
           ElevatedButton(
+            key: Key('AddMemberDialogButton'),
             onPressed: _submitForm,
             style: ElevatedButton.styleFrom(
               minimumSize: Size(double.infinity, 48),
