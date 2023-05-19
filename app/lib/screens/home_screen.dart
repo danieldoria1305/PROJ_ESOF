@@ -5,15 +5,9 @@ import 'package:flutter/material.dart';
 
 import 'account_screen.dart';
 
-final List<String> _menuItems = <String>[
-  'About',
-  'Contact',
-  'Settings',
-];
-
 final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-enum Menu { itemOne, itemTwo, itemThree }
+enum Menu { itemOne, itemTwo}
 
 class _ProfileIcon extends StatelessWidget {
   final String userId;
@@ -39,16 +33,12 @@ class _ProfileIcon extends StatelessWidget {
                 child: Text('Account')
             ),
           ),
-          const PopupMenuItem<Menu>(
-            value: Menu.itemTwo,
-            child: Text('Settings'),
-          ),
           PopupMenuItem<Menu>(
             key: Key("SignOutButton"),
             onTap: () async {
               FirebaseAuth.instance.signOut();
             },
-            value: Menu.itemThree,
+            value: Menu.itemTwo,
             child: Text('Sign Out'),
           ),
         ]);
@@ -182,33 +172,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final bool isLargeScreen = width > 800;
-
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
         elevation: 0,
         titleSpacing: 0,
-        leading: isLargeScreen
-            ? null
-            : IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
-        title: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                "GenealogyGuru",
-                style: TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              if (isLargeScreen) Expanded(child: _navBarItems())
-            ],
-          ),
+        leading: Text(""),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "GenealogyGuru",
+              style: TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
         actions: [
           Padding(
@@ -222,7 +200,6 @@ class _HomeScreenState extends State<HomeScreen> {
           )
         ],
       ),
-      drawer: isLargeScreen ? null : _drawer(),
       body: StreamBuilder<QuerySnapshot>(
         stream: _db.collection('users').doc(widget.user?.uid).collection('trees').snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -265,19 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _drawer() => Drawer(
-    child: ListView(
-      children: _menuItems
-          .map((item) => ListTile(
-        onTap: () {
-          _scaffoldKey.currentState?.openEndDrawer();
-        },
-        title: Text(item),
-      ))
-          .toList(),
-    ),
-  );
-
+  /*
   Widget _navBarItems() => Row(
     mainAxisAlignment: MainAxisAlignment.end,
     crossAxisAlignment: CrossAxisAlignment.center,
@@ -296,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     )
         .toList(),
-  );
+  ); */
 
   late TextEditingController controller;
   String name = '';
