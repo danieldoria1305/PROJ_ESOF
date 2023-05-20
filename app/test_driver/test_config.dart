@@ -8,7 +8,7 @@ import 'steps/test_steps.dart';
 
 Future<void> main() {
   final config = FlutterTestConfiguration()
-    ..features = [Glob(r"test_driver/features/create_member_test.feature")]
+    ..features = [Glob(r"test_driver/features/Acceptance_Tests.feature")]
     ..reporters = [
       ProgressReporter(),
       TestRunSummaryReporter(),
