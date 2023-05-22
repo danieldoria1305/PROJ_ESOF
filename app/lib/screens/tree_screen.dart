@@ -314,6 +314,7 @@ class _TreeScreenState extends State<TreeScreen> {
                   child: Column(
                     children: [
                       DropdownButtonFormField<String>(
+                        key: Key('GenderFilterDropdown'),
                         value: _selectedGender,
                         onChanged: (value) {
                           setState(() {
@@ -383,6 +384,7 @@ class _TreeScreenState extends State<TreeScreen> {
                           }
                           final List<String> lastNames = snapshot.data ?? [];
                           return DropdownButtonFormField<String>(
+                            key: Key('LastNameFilterDropdown'),
                             value: _selectedLastName,
                             onChanged: (value) {
                               setState(() {
@@ -444,6 +446,7 @@ class _TreeScreenState extends State<TreeScreen> {
                                 final List<String> nationalities =
                                     snapshot.data ?? [];
                                 return DropdownButtonFormField<String>(
+                                  key: Key('NationalityFilterDropdown'),
                                   value: _selectedNationality,
                                   onChanged: _setSelectedNationality,
                                   items: [
