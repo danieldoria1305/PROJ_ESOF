@@ -1,6 +1,6 @@
 Feature: General App Testing
-#Feature: User registering and information stored in the database
-  Scenario: User creates an account with valid email and password
+
+  Scenario: Creating an account with valid inputs
     Given I have "LoginScreen" on screen
     And I have "EmailField" and "PasswordField" and "RegisterNowButton"
     When I tap the "RegisterNowButton" button
@@ -15,7 +15,7 @@ Feature: General App Testing
     And I tap the "SignUpButton" button
     Then I expect the widget "HomeScreen" to be present within 5 seconds
 
-  Scenario: User deletes the created account
+  Scenario: Deleting an account
     Given I have "HomeScreen" on screen
     And I have "ProfileIcon" on screen
     When I tap the "ProfileIcon" icon
@@ -29,8 +29,8 @@ Feature: General App Testing
     When I tap the "DeleteAccountAlertButton" button
     Then I expect the widget "LoginScreen" to be present within 3 seconds
 
-#Feature: Login
-  Scenario: Email and password are in specified format and sign in is clicked
+
+  Scenario: Signing in with valid inputs
     Given I have "LoginScreen" on screen
     And I have "EmailField" and "PasswordField" and "SignInButton"
     When I fill the "EmailField" field with "test@gmail.com"
@@ -38,8 +38,8 @@ Feature: General App Testing
     Then I tap the "SignInButton" widget
     Then I expect the widget "HomeScreen" to be present within 3 seconds
 
-#Feature: Create a new tree and delete it
-  Scenario: User creates a new tree
+
+  Scenario: Creating a new tree
     Given I have "HomeScreen" on screen
     And I have "CreateTreeButton" on screen
     When I tap the "CreateTreeButton" button
@@ -51,7 +51,7 @@ Feature: General App Testing
     Then I expect the widget "HomeScreen" to be present within 3 seconds
     And I expect a "TreeWidget" that contains the text "My First Tree" to also contain the text "Family Tree"
 
-  Scenario: User deletes a tree
+  Scenario: Deleting a tree
     Given I have "HomeScreen" on screen
     And I expect a "TreeWidget" that contains the text "My First Tree" to also contain the text "Family Tree"
     When I swipe left by 400 pixels on the widget that contains the text "My First Tree"
@@ -61,8 +61,8 @@ Feature: General App Testing
     Then I expect the widget "HomeScreen" to be present within 3 seconds
     And I expect the text "My First Tree" to be absent
 
-#Feature: Create a new member in a tree and delete it
-  Scenario: User enters the 'test' tree screen and creates a member
+
+  Scenario: Creating a new member in 'test' tree
     Given I have "HomeScreen" on screen
     And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
     When I tap the widget that contains the text "My Test Tree"
@@ -81,7 +81,7 @@ Feature: General App Testing
     Then I expect the widget "TreeScreen" to be present within 3 seconds
     And I have a "MemberWidget" that contains the text "Test Member"
 
-  Scenario: User enters the 'test' tree screen and filters the members by gender
+  Scenario: Filtering by gender the members in 'test' tree
     Given I have "HomeScreen" on screen
     And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
     When I tap the widget that contains the text "My Test Tree"
@@ -91,7 +91,7 @@ Feature: General App Testing
     Then I expect the text "Test Member" to be present
     And I expect the text "Female Test" to be absent
 
-  Scenario: User enters the 'test' tree screen and filters the members by last name
+  Scenario: Filtering by last name the members in 'test' tree
     Given I have "HomeScreen" on screen
     And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
     When I tap the widget that contains the text "My Test Tree"
@@ -101,7 +101,7 @@ Feature: General App Testing
     Then I expect the text "Test Member" to be absent
     And I expect the text "Male Test" to be present
 
-  Scenario: User enters the 'test' tree screen and filters the members by nationality
+  Scenario: Filtering by nationality the members in 'test' tree
     Given I have "HomeScreen" on screen
     And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
     When I tap the widget that contains the text "My Test Tree"
@@ -111,7 +111,7 @@ Feature: General App Testing
     Then I expect the text "Test Member" to be present
     And I expect the text "Male Testing" to be absent
 
-  Scenario: User enters the 'test' tree screen and enters the statistics screen (1)
+  Scenario: Checking the statistics of 'test' tree with 'Test Member'
     Given I have "HomeScreen" on screen
     And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
     When I tap the widget that contains the text "My Test Tree"
@@ -131,7 +131,7 @@ Feature: General App Testing
     Then I expect a "StatisticsWidget" that contains the text "Most common nationality" to also contain the text "PT"
 
 
-  Scenario: User enters the 'test' tree screen and deletes a member
+  Scenario: Deleting a member in 'test' tree
     Given I have "HomeScreen" on screen
     And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
     When I tap the widget that contains the text "My Test Tree"
@@ -144,7 +144,7 @@ Feature: General App Testing
     Then I expect the widget "TreeScreen" to be present within 3 seconds
     And I expect the text "Test Member" to be absent
 
-  Scenario: User enters the 'test' tree screen and enters the statistics screen (2)
+  Scenario: Checking the statistics of 'test' tree without 'Test Member'
     Given I have "HomeScreen" on screen
     And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
     When I tap the widget that contains the text "My Test Tree"
@@ -164,8 +164,7 @@ Feature: General App Testing
     Then I expect a "StatisticsWidget" that contains the text "Most common nationality" to also contain the text "PT"
 
 
-#Feature: Sign out
-  Scenario: User is logged in and clicks on sign out
+  Scenario: Signing out
     Given I have "HomeScreen" on screen
     And I have "ProfileIcon" on screen
     When I tap the "ProfileIcon" icon
