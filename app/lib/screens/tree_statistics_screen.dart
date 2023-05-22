@@ -8,12 +8,13 @@ class StatisticsWidget extends StatelessWidget {
   final int count;
   final String text;
   final String description;
-
+  final Key key;
   StatisticsWidget({
     required this.title,
     this.count = -1,
     this.text = '',
     required this.description,
+    required this.key,
   });
 
   @override
@@ -53,6 +54,7 @@ class StatisticsWidget extends StatelessWidget {
 class TreeStatisticsScreen extends StatefulWidget {
   final String userId;
   final String treeId;
+  final Key key=Key('TreeStatisticsScreen');
 
   TreeStatisticsScreen({required this.userId, required this.treeId});
 
@@ -139,11 +141,13 @@ class _TreeStatisticsScreenState extends State<TreeStatisticsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 StatisticsWidget(
+                  key:Key('MaleCountWidget'),
                   title: 'Male',
                   count: maleCount,
                   description: 'Male members',
                 ),
                 StatisticsWidget(
+                  key:Key('FemaleCountWidget'),
                   title: 'Female',
                   count: femaleCount,
                   description: 'Female members',
@@ -155,11 +159,13 @@ class _TreeStatisticsScreenState extends State<TreeStatisticsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 StatisticsWidget(
+                  key:Key('NonBinaryCountWidget'),
                   title: 'Non-binary',
                   count: nonBinaryCount,
                   description: 'Non-binary members',
                 ),
                 StatisticsWidget(
+                  key:Key('OtherCountWidget'),
                   title: 'Other',
                   count: otherCount,
                   description: 'Other members',
@@ -177,6 +183,7 @@ class _TreeStatisticsScreenState extends State<TreeStatisticsScreen> {
             ),
             SizedBox(height: 20),
             StatisticsWidget(
+              key:Key('MostCommonNationalityWidget'),
               title: 'Most Common Nationality',
               text: mostCommonNationality,
               description: 'Most common nationality',

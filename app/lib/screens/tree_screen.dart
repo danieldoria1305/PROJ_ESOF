@@ -287,6 +287,7 @@ class _TreeScreenState extends State<TreeScreen> {
         title: Text(widget.treeName),
         actions: [
           IconButton(
+            key:Key('TreeStatisticsButton'),
             tooltip: 'Tree Statistics',
             onPressed: () {
               Navigator.of(context).push(

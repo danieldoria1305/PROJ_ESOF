@@ -81,6 +81,26 @@ Feature: General App Testing
     Then I expect the widget "TreeScreen" to be present within 3 seconds
     And I have a "MemberWidget" that contains the text "Test Member"
 
+  Scenario: User enters the 'test' tree screen and enters the statistics screen (1)
+    Given I have "HomeScreen" on screen
+    And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
+    When I tap the widget that contains the text "My Test Tree"
+    Then I expect the widget "TreeScreen" to be present within 3 seconds
+    And I have "TreeStatisticsButton" on screen
+    When I tap the "TreeStatisticsButton" widget
+    Then I expect the widget "TreeStatisticsScreen" to be present within 3 seconds
+    And I have "MaleCountWidget" on screen
+    And I have "FemaleCountWidget" on screen
+    And I have "NonBinaryCountWidget" on screen
+    And I have "OtherCountWidget" on screen
+    And I have "MostCommonNationalityWidget" on screen
+    Then I expect a "StatisticsWidget" that contains the text "Male members" to also contain the text "2"
+    Then I expect a "StatisticsWidget" that contains the text "Female members" to also contain the text "1"
+    Then I expect a "StatisticsWidget" that contains the text "Non-binary members" to also contain the text "1"
+    Then I expect a "StatisticsWidget" that contains the text "Other members" to also contain the text "2"
+    Then I expect a "StatisticsWidget" that contains the text "Most common nationality" to also contain the text "PT"
+
+
   Scenario: User enters the 'test' tree screen and deletes a member
     Given I have "HomeScreen" on screen
     And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
@@ -93,6 +113,26 @@ Feature: General App Testing
     When I tap the "DeleteMemberDialogButton" button
     Then I expect the widget "TreeScreen" to be present within 3 seconds
     And I expect the text "Test Member" to be absent
+
+  Scenario: User enters the 'test' tree screen and enters the statistics screen (2)
+    Given I have "HomeScreen" on screen
+    And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
+    When I tap the widget that contains the text "My Test Tree"
+    Then I expect the widget "TreeScreen" to be present within 3 seconds
+    And I have "TreeStatisticsButton" on screen
+    When I tap the "TreeStatisticsButton" widget
+    Then I expect the widget "TreeStatisticsScreen" to be present within 3 seconds
+    And I have "MaleCountWidget" on screen
+    And I have "FemaleCountWidget" on screen
+    And I have "NonBinaryCountWidget" on screen
+    And I have "OtherCountWidget" on screen
+    And I have "MostCommonNationalityWidget" on screen
+    Then I expect a "StatisticsWidget" that contains the text "Male members" to also contain the text "2"
+    Then I expect a "StatisticsWidget" that contains the text "Female members" to also contain the text "1"
+    Then I expect a "StatisticsWidget" that contains the text "Non-binary members" to also contain the text "1"
+    Then I expect a "StatisticsWidget" that contains the text "Other members" to also contain the text "1"
+    Then I expect a "StatisticsWidget" that contains the text "Most common nationality" to also contain the text "PT"
+
 
 #Feature: Sign out
   Scenario: User is logged in and clicks on sign out
