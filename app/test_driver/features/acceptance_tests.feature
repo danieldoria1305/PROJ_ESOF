@@ -81,6 +81,36 @@ Feature: General App Testing
     Then I expect the widget "TreeScreen" to be present within 3 seconds
     And I have a "MemberWidget" that contains the text "Test Member"
 
+  Scenario: User enters the 'test' tree screen and filters the members by gender
+    Given I have "HomeScreen" on screen
+    And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
+    When I tap the widget that contains the text "My Test Tree"
+    Then I expect the widget "TreeScreen" to be present within 3 seconds
+    Given I have "GenderFilterDropdown" on screen
+    When I select the option "Other" from the "GenderFilterDropdown" dropdown
+    Then I expect the text "Test Member" to be present
+    And I expect the text "Female Test" to be absent
+
+  Scenario: User enters the 'test' tree screen and filters the members by last name
+    Given I have "HomeScreen" on screen
+    And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
+    When I tap the widget that contains the text "My Test Tree"
+    Then I expect the widget "TreeScreen" to be present within 3 seconds
+    Given I have "LastNameFilterDropdown" on screen
+    When I select the option "Test" from the "LastNameFilterDropdown" dropdown
+    Then I expect the text "Test Member" to be absent
+    And I expect the text "Male Test" to be present
+
+  Scenario: User enters the 'test' tree screen and filters the members by nationality
+    Given I have "HomeScreen" on screen
+    And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
+    When I tap the widget that contains the text "My Test Tree"
+    Then I expect the widget "TreeScreen" to be present within 3 seconds
+    Given I have "NationalityFilterDropdown" on screen
+    When I select the option "Test" from the "NationalityFilterDropdown" dropdown
+    Then I expect the text "Test Member" to be present
+    And I expect the text "Male Testing" to be absent
+
   Scenario: User enters the 'test' tree screen and enters the statistics screen (1)
     Given I have "HomeScreen" on screen
     And I expect a "TreeWidget" that contains the text "My Test Tree" to also contain the text "Family Tree"
