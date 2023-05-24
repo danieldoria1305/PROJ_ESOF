@@ -242,27 +242,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /*
-  Widget _navBarItems() => Row(
-    mainAxisAlignment: MainAxisAlignment.end,
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: _menuItems
-        .map(
-          (item) => InkWell(
-        onTap: () {},
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-              vertical: 24.0, horizontal: 16),
-          child: Text(
-            item,
-            style: const TextStyle(fontSize: 18),
-          ),
-        ),
-      ),
-    )
-        .toList(),
-  ); */
-
   late TextEditingController controller;
   String name = '';
 

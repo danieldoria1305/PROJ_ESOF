@@ -22,7 +22,6 @@ class MemberWidget extends StatelessWidget {
   final void Function(String) onDeleteMember;
   final Key key = Key('MemberWidget');
 
-
   MemberWidget({
     required this.firstName,
     required this.lastName,
@@ -39,7 +38,7 @@ class MemberWidget extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        key:Key('DeleteMemberDialog'),
+        key: Key('DeleteMemberDialog'),
         title: Text('Confirm'),
         content: Text('Are you sure you wish to delete this item?'),
         actions: <Widget>[
@@ -287,7 +286,7 @@ class _TreeScreenState extends State<TreeScreen> {
         title: Text(widget.treeName),
         actions: [
           IconButton(
-            key:Key('TreeStatisticsButton'),
+            key: Key('TreeStatisticsButton'),
             tooltip: 'Tree Statistics',
             onPressed: () {
               Navigator.of(context).push(
@@ -326,13 +325,13 @@ class _TreeScreenState extends State<TreeScreen> {
                                 .doc(widget.treeId)
                                 .collection('members')
                                 .where('gender',
-                                isEqualTo: _selectedGender.isNotEmpty
-                                    ? _selectedGender
-                                    : null)
+                                    isEqualTo: _selectedGender.isNotEmpty
+                                        ? _selectedGender
+                                        : null)
                                 .where('lastName',
-                                isEqualTo: _selectedLastName.isNotEmpty
-                                    ? _selectedLastName
-                                    : null)
+                                    isEqualTo: _selectedLastName.isNotEmpty
+                                        ? _selectedLastName
+                                        : null)
                                 .snapshots();
                           });
                         },
@@ -367,6 +366,7 @@ class _TreeScreenState extends State<TreeScreen> {
                     ],
                   ),
                 ),
+                SizedBox(width: 16),
                 Container(
                   width: 100,
                   child: Column(
@@ -396,13 +396,13 @@ class _TreeScreenState extends State<TreeScreen> {
                                     .doc(widget.treeId)
                                     .collection('members')
                                     .where('gender',
-                                    isEqualTo: _selectedGender.isNotEmpty
-                                        ? _selectedGender
-                                        : null)
+                                        isEqualTo: _selectedGender.isNotEmpty
+                                            ? _selectedGender
+                                            : null)
                                     .where('lastName',
-                                    isEqualTo: _selectedLastName.isNotEmpty
-                                        ? _selectedLastName
-                                        : null)
+                                        isEqualTo: _selectedLastName.isNotEmpty
+                                            ? _selectedLastName
+                                            : null)
                                     .snapshots();
                               });
                             },
@@ -425,109 +425,111 @@ class _TreeScreenState extends State<TreeScreen> {
                           );
                         },
                       ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
-                      Container(
-                        width: 137,
-                        child: Column(
-                          children: [
-                            FutureBuilder<List<String>>(
-                              future: fetchNationalities(),
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<List<String>> snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return CircularProgressIndicator();
-                                }
-                                if (snapshot.hasError) {
-                                  return Text('Error: ${snapshot.error}');
-                                }
-                                final List<String> nationalities =
-                                    snapshot.data ?? [];
-                                return DropdownButtonFormField<String>(
-                                  key: Key('NationalityFilterDropdown'),
-                                  value: _selectedNationality,
-                                  onChanged: _setSelectedNationality,
-                                  items: [
-                                    DropdownMenuItem<String>(
-                                      value: '',
-                                      child: Text('All Nationalities'),
-                                    ),
-                                    ...nationalities.map((nationality) {
-                                      return DropdownMenuItem<String>(
-                                        value: nationality,
-                                        child: Text(nationality),
-                                      );
-                                    }).toList(),
-                                  ],
-                                  decoration: InputDecoration(
-                                    hintText: 'Filter by Nationality',
-                                  ),
-                                  isExpanded: true,
+                SizedBox(width: 16),
+                Container(
+                  width: 137,
+                  child: Column(
+                    children: [
+                      FutureBuilder<List<String>>(
+                        future: fetchNationalities(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<List<String>> snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          }
+                          if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          }
+                          final List<String> nationalities =
+                              snapshot.data ?? [];
+                          return DropdownButtonFormField<String>(
+                            key: Key('NationalityFilterDropdown'),
+                            value: _selectedNationality,
+                            onChanged: _setSelectedNationality,
+                            items: [
+                              DropdownMenuItem<String>(
+                                value: '',
+                                child: Text('All Nationalities'),
+                              ),
+                              ...nationalities.map((nationality) {
+                                return DropdownMenuItem<String>(
+                                  value: nationality,
+                                  child: Text(nationality),
                                 );
-                              },
+                              }).toList(),
+                            ],
+                            decoration: InputDecoration(
+                              hintText: 'Filter by Nationality',
                             ),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: _membersStream,
-                    builder: (BuildContext context,
-                        AsyncSnapshot<QuerySnapshot> snapshot) {
-                      if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      }
-                      if (!snapshot.hasData) {
-                        return Center(child: CircularProgressIndicator());
-                      }
-                      final List<DocumentSnapshot> members = snapshot.data!.docs;
-
-                      List<DocumentSnapshot> filteredMembers = members;
-                      if (_selectedNationality.isNotEmpty) {
-                        filteredMembers = members
-                            .where((member) =>
-                                member['nationality'] == _selectedNationality)
-                            .toList();
-                      }
-
-                      if (filteredMembers.isEmpty) {
-                        return Center(
-                          child: Text(
-                            'No family members matching the filters',
-                            style: TextStyle(
-                              fontSize: 22,
-                            ),
-                          ),
-                        );
-                      }
-                      return ListView.builder(
-                        itemCount: filteredMembers.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final member = filteredMembers[index];
-                          return MemberWidget(
-                            firstName: member['firstName'],
-                            lastName: member['lastName'],
-                            userId: widget.userId,
-                            treeId: widget.treeId,
-                            memberId: member.id,
-                            gender: member['gender'],
-                            birthDate: member['birthDate'].toDate(),
-                            photoUrl: member['photoUrl'],
-                            onDeleteMember: _deleteMember,
+                            isExpanded: true,
                           );
                         },
-                      );
-                    },
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                   ),
                 ),
               ],
             ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _membersStream,
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                final List<DocumentSnapshot> members = snapshot.data!.docs;
+
+                List<DocumentSnapshot> filteredMembers = members;
+                if (_selectedNationality.isNotEmpty) {
+                  filteredMembers = members
+                      .where((member) =>
+                          member['nationality'] == _selectedNationality)
+                      .toList();
+                }
+
+                if (filteredMembers.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No family members matching the filters',
+                      style: TextStyle(
+                        fontSize: 22,
+                      ),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  itemCount: filteredMembers.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final member = filteredMembers[index];
+                    return MemberWidget(
+                      firstName: member['firstName'],
+                      lastName: member['lastName'],
+                      userId: widget.userId,
+                      treeId: widget.treeId,
+                      memberId: member.id,
+                      gender: member['gender'],
+                      birthDate: member['birthDate'].toDate(),
+                      photoUrl: member['photoUrl'],
+                      onDeleteMember: _deleteMember,
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         key: Key('AddMemberButton'),
         onPressed: () {
@@ -566,7 +568,6 @@ class _AddMemberFormState extends State<AddMemberForm> {
   DateTime? _dateOfDeath;
   String _gender = "";
   String _nationality = "";
-
 
   Future<void> _pickImage() async {
     final pickedImage =
@@ -609,7 +610,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
           ),
           SizedBox(height: 16),
           TextFormField(
-            key:Key('FirstNameField'),
+            key: Key('FirstNameField'),
             decoration: InputDecoration(
               labelText: 'First Name',
               border: OutlineInputBorder(),
@@ -624,7 +625,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
           ),
           SizedBox(height: 16.0),
           TextFormField(
-            key:Key('LastNameField'),
+            key: Key('LastNameField'),
             decoration: InputDecoration(
               labelText: 'Last Name',
               border: OutlineInputBorder(),
@@ -698,7 +699,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
           ),
           SizedBox(height: 16),
           TextFormField(
-            key:Key('NationalityField'),
+            key: Key('NationalityField'),
             decoration: InputDecoration(
               labelText: 'Nationality',
               border: OutlineInputBorder(),
