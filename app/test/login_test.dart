@@ -10,13 +10,9 @@ class MockUser extends Mock implements User {}
 
 class MockUserCredential extends Mock implements UserCredential {
   @override
-  final User? user;
+  final User user;
 
-  MockUserCredential({this.user});
-}
-
-void stubSignInWithEmailAndPassword(MockFirebaseAuth mockFirebaseAuth, MockUserCredential mockUserCredential) {
-
+  MockUserCredential({required this.user});
 }
 
 void main() {
@@ -26,7 +22,7 @@ void main() {
     late MockUserCredential mockUserCredential;
     late LoginScreen loginScreen;
 
-    setUp(() {
+    setUpAll(() {
       mockFirebaseAuth = MockFirebaseAuth();
       mockUser = MockUser();
       mockUserCredential = MockUserCredential(user: mockUser);

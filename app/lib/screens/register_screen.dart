@@ -6,7 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 class RegisterScreen extends StatefulWidget {
   final VoidCallback showLoginScreen;
   final Key key = Key("RegisterScreen");
-  RegisterScreen({required this.showLoginScreen});
+  final FirebaseAuth auth;
+
+  RegisterScreen({required this.showLoginScreen, required this.auth});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -59,7 +61,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future signUp() async {
     if (passwordConfirmed()) {
       try {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        await widget.auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
@@ -81,7 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               );
             });
       }
-      if (FirebaseAuth.instance.currentUser != null) {
+      if (widget.auth.currentUser != null) {
         await addUserDetails(
           _firstNameController.text.trim(),
           _lastNameController.text.trim(),
