@@ -41,7 +41,6 @@ void main() {
         return Future.value(mockUserCredential);
       });
 
-      // Provide the mockFirebaseAuth instance to the FirebaseAuth class
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -50,12 +49,10 @@ void main() {
         ),
       );
 
-      // Enter email and password
-      await tester.enterText(find.byKey(Key('EmailField')), 'test@example.com');
-      await tester.enterText(find.byKey(Key('PasswordField')), 'password');
+      await tester.enterText(find.byKey(const Key('EmailField')), 'test@example.com');
+      await tester.enterText(find.byKey(const Key('PasswordField')), 'password');
 
-      // Tap the sign-in button
-      await tester.tap(find.byKey(Key('SignInButton')));
+      await tester.tap(find.byKey(const Key('SignInButton')));
       await tester.pumpAndSettle();
 
       verify(() => mockFirebaseAuth.signInWithEmailAndPassword(
@@ -63,13 +60,11 @@ void main() {
         password: any(named: 'password', that: isNotNull),
       )).called(1);
 
-      // Verify that the dialog is dismissed
       expect(find.byType(CircularProgressIndicator), findsNothing);
       expect(find.byType(AlertDialog), findsNothing);
     });
 
     testWidgets('Login failure', (WidgetTester tester) async {
-      // Stub the sign-in method to throw an exception
       final exception = FirebaseAuthException(
         code: 'invalid-email',
         message: 'Invalid email address',
@@ -79,7 +74,6 @@ void main() {
         password: any(named: 'password', that: isNotNull),
       )).thenThrow(exception);
 
-      // Provide the mockFirebaseAuth instance to the FirebaseAuth class
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -88,21 +82,17 @@ void main() {
         ),
       );
 
-      // Enter email and password
-      await tester.enterText(find.byKey(Key('EmailField')), 'test@example.com');
-      await tester.enterText(find.byKey(Key('PasswordField')), 'password');
+      await tester.enterText(find.byKey(const Key('EmailField')), 'test@example.com');
+      await tester.enterText(find.byKey(const Key('PasswordField')), 'password');
 
-      // Tap the sign-in button
-      await tester.tap(find.byKey(Key('SignInButton')));
+      await tester.tap(find.byKey(const Key('SignInButton')));
       await tester.pumpAndSettle();
 
-      // Verify that sign-in method was called with the correct credentials
       verify(() => mockFirebaseAuth.signInWithEmailAndPassword(
         email: any(named: 'email', that: isNotNull),
         password: any(named: 'password', that: isNotNull),
       )).called(1);
 
-      // Verify that the error dialog is shown
       expect(find.text('Error'), findsOneWidget);
       expect(find.text('Invalid email address'), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);
