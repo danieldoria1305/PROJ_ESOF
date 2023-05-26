@@ -4,9 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback showRegisterScreen;
+  final FirebaseAuth auth;
   final Key key = Key("LoginScreen");
 
-  LoginScreen({required this.showRegisterScreen});
+  LoginScreen({required this.showRegisterScreen, required this.auth});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -28,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
     );
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await widget.auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );

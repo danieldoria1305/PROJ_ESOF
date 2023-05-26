@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'dart:io';
 import 'package:GenealogyGuru/screens/tree_statistics_screen.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -294,6 +293,7 @@ class _TreeScreenState extends State<TreeScreen> {
                   builder: (context) => TreeStatisticsScreen(
                     treeId: widget.treeId,
                     userId: widget.userId,
+                    firestore: _db,
                   ),
                 ),
               );
