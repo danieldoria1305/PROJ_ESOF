@@ -293,6 +293,7 @@ class _TreeScreenState extends State<TreeScreen> {
                   builder: (context) => TreeStatisticsScreen(
                     treeId: widget.treeId,
                     userId: widget.userId,
+                    firestore: _db,
                   ),
                 ),
               );

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:flutter/material.dart';
 
 class StatisticsWidget extends StatelessWidget {
   final String title;
@@ -9,6 +8,7 @@ class StatisticsWidget extends StatelessWidget {
   final String text;
   final String description;
   final Key key;
+
   StatisticsWidget({
     required this.title,
     this.count = -1,
@@ -54,9 +54,10 @@ class StatisticsWidget extends StatelessWidget {
 class TreeStatisticsScreen extends StatefulWidget {
   final String userId;
   final String treeId;
-  final Key key=Key('TreeStatisticsScreen');
+  final FirebaseFirestore firestore;
+  final Key key = Key('TreeStatisticsScreen');
 
-  TreeStatisticsScreen({required this.userId, required this.treeId});
+  TreeStatisticsScreen({required this.userId, required this.treeId, required this.firestore});
 
   @override
   _TreeStatisticsScreenState createState() => _TreeStatisticsScreenState();
@@ -77,7 +78,7 @@ class _TreeStatisticsScreenState extends State<TreeStatisticsScreen> {
 
   Future<void> fetchTreeStatistics() async {
     try {
-      final treeSnapshot = await FirebaseFirestore.instance
+      final treeSnapshot = await widget.firestore
           .collection('users')
           .doc(widget.userId)
           .collection('trees')
